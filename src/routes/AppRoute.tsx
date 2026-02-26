@@ -19,6 +19,9 @@ import { ContractWeeklyScheduleBuilderPage } from "@/features/contractSchedule/s
 import { UnityDetailPage } from "@/features/unity/UnityDetailPage";
 import { ClientContractsPage } from "@/features/contractSchedule/contract/ClientContractPage";
 import { ClientContractDetailPage } from "@/features/contractSchedule/contract/ClientContractDeatilPage";
+import { AssignmentPage } from "@/features/assignment/AssignmentPage";
+import { AssignmentFormPage } from "@/features/assignment/AssignmentFormPage";
+import { AssignmentDetailPage } from "@/features/assignment/AssignmentDetailPage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -61,6 +64,10 @@ export const AppRoutes = () => (
           <Route path="contracts" element={<ClientContractsPage />} />
           <Route path="contracts/:id" element={<ClientContractDetailPage />} />
           <Route path="weekly-builder" element={<ContractWeeklyScheduleBuilderPage />} />
+          <Route path="assignments" element={<AssignmentPage />} />
+          <Route path="assignments/new" element={<AssignmentFormPage />} />
+          <Route path="assignments/:id" element={<AssignmentDetailPage />} />
+          <Route path="assignments/:id/edit" element={<AssignmentFormPage />} />
         </Route>
 
         {/* Security */}

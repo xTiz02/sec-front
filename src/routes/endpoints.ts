@@ -1,5 +1,5 @@
 // BASE ROUTES
-export const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:8081"
+export const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:8082"
 export const SECURE_API_V1 = BASE_URL + "/secure/api/v1"
 export const SECURE_API_V2 = BASE_URL + "/secure/api/v2"
 export const HOME_PATH = "/"

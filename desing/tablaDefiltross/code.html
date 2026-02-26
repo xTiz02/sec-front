@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Listado de Asignaciones de Supervisión</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary dark:text-white">
+<div class="size-8 flex items-center justify-center rounded-lg bg-primary/10">
+<span class="material-symbols-outlined text-primary" style="font-size: 24px;">grid_view</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Portal de Supervisión</h2>
+</div>
+<label class="flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-slate-500 dark:text-slate-400 flex border-none bg-slate-100 dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined" style="font-size: 20px;">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-slate-100 dark:bg-slate-800 focus:border-none h-full placeholder:text-slate-500 dark:placeholder:text-slate-400 px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal" placeholder="Buscar..." value=""/>
+</div>
+</label>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="flex items-center gap-9 hidden md:flex">
+<a class="text-primary text-sm font-bold leading-normal" href="#">Asignaciones</a>
+<a class="text-slate-900 dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Unidades</a>
+<a class="text-slate-900 dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Reportes</a>
+<a class="text-slate-900 dark:text-slate-300 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Configuración</a>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-slate-100 dark:ring-slate-700" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCV_SHC4mvJ7zW1zkshSzL0gHJIs9wkSMc4HGVXcm-pw0JIo5nwOOswQFmuijuspcNalFkUtXiz9L7-6PYaedzJ5qhHergmoGyJ65Kv7nd1ycza_lniNQVUe5Y3PwvDPPr9Tb8ofOPLda84dZU_zXVbRTpb9dyZy49-d2kZjuA5d9pxB_f3NmKIB5WtRTOUFcIHaB95XNSlPu21DNVvXykz2VEhot5Ep_PxTxh7dIW7WEIAhwdG6Qr5maVJzAkgUuiy3j8e4c6KZg");'></div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="layout-container flex h-full grow flex-col">
+<div class="px-4 md:px-10 flex flex-1 justify-center py-8">
+<div class="layout-content-container flex flex-col max-w-[1200px] flex-1 w-full">
+<!-- Page Title & Primary Action -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+<div class="flex flex-col gap-2">
+<h1 class="text-slate-900 dark:text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight">Asignaciones de Supervisión</h1>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal">Gestione y monitoree las asignaciones mensuales para los Jefes de Operaciones.</p>
+</div>
+<button class="flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-blue-700 text-white font-bold h-12 px-6 shadow-lg shadow-blue-500/30 transition-all duration-200">
+<span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+<span>Nueva Asignación</span>
+</button>
+</div>
+<!-- Filters & Controls -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 mb-6 shadow-sm border border-slate-200 dark:border-slate-800">
+<div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+<!-- Search -->
+<div class="w-full md:w-96">
+<label class="flex flex-col h-11 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-slate-200 dark:border-slate-700 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<div class="text-slate-500 dark:text-slate-400 flex bg-transparent items-center justify-center pl-3">
+<span class="material-symbols-outlined" style="font-size: 20px;">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 bg-transparent text-slate-900 dark:text-white focus:outline-none h-full placeholder:text-slate-400 px-3 text-sm font-medium" placeholder="Buscar por Jefe de Operaciones..."/>
+</div>
+</label>
+</div>
+<!-- Filters -->
+<div class="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+<div class="relative min-w-[140px]">
+<select class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-2.5 pl-4 pr-10 rounded-lg text-sm font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer">
+<option>Este Mes</option>
+<option>Mes Pasado</option>
+<option>Próximo Mes</option>
+<option>Todo el Año</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+<span class="material-symbols-outlined" style="font-size: 20px;">calendar_month</span>
+</div>
+</div>
+<button class="flex items-center justify-center gap-2 h-11 px-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-medium whitespace-nowrap">
+<span class="material-symbols-outlined" style="font-size: 20px;">filter_list</span>
+<span>Más Filtros</span>
+</button>
+<button class="flex items-center justify-center h-11 w-11 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Table Container -->
+<div class="@container w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+<th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-1/4">Jefe de Operaciones</th>
+<th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-1/6">Mes/Año</th>
+<th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-1/6">Zona Principal</th>
+<th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-1/6 text-center">Unidades</th>
+<th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-1/6 text-center">Estado</th>
+<th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-[80px] text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+<!-- Row 1 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary font-bold text-sm">CR</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-white text-sm">Carlos Ruiz</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">ID: OPE-4021</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-slate-600 dark:text-slate-300">Octubre 2023</td>
+<td class="p-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 14px;">location_on</span>
+                                                Zona Norte
+                                            </div>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold">15</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                                Activo
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-sm">AG</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-white text-sm">Ana Gómez</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">ID: OPE-3890</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-slate-600 dark:text-slate-300">Octubre 2023</td>
+<td class="p-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 14px;">location_on</span>
+                                                Zona Sur
+                                            </div>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold">12</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                                Pendiente
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10" data-alt="Portrait of Luis Martinez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtCl7knNm7tWtbqpSQfbJ-E6bV1e-WaNfzVVAW6oHyjGL3ZuSnA4Hgiu7C4dIF-PbUSDbMjlGxI9CYf27arpF9TDrdAwzvPKabW4CzRZIuaFht1yw_vPj0jWtu0RMXPsMqrTDAZ3BKNx5ECFzGGI90FC4vbfb5tmFUO8gtocLL68f5pEGYWlbY3xLMtEGbWKLRZ059jDjAg29-DW9xq5nfcbYUGeRuCgYeeqVQMnXHTTfkUSa1FGJMigOxaHFxHelVfHIOZB4lVg");'></div>
+<div>
+<p class="font-bold text-slate-900 dark:text-white text-sm">Luis Martínez</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">ID: OPE-4102</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-slate-600 dark:text-slate-300">Septiembre 2023</td>
+<td class="p-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 14px;">location_on</span>
+                                                Zona Este
+                                            </div>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold">18</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                Completado
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold text-sm">SH</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-white text-sm">Sofía Hernández</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">ID: OPE-3921</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-slate-600 dark:text-slate-300">Octubre 2023</td>
+<td class="p-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 14px;">location_on</span>
+                                                Zona Oeste
+                                            </div>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold">10</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                                Activo
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10" data-alt="Portrait of Jorge Perez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAtHFmQvTp6SfSJoHYQJhR1n29n4lLbTwIr92Py1jxiwIEZzIL9CeuVv-RE8VtMeBRwuo5mrA3G7at0_uqIDUYcLH-9CWkGlqj0Rbt6BhMUMlWVMUJ5P2_ZGk9HXcBPi9IysR7wbf3h1Ru1f_kK7SrBZzH087OBG2nZJ4xbFCoIRBqn_-IS2k9QtomQMcVjo0_9OIdNrwhS6guOQ9O9ZpIT3mFESRIj7lZZnukcf3KPD48aZyB0dWNn6R8oSQs647EAseu9V1xVRQ");'></div>
+<div>
+<p class="font-bold text-slate-900 dark:text-white text-sm">Jorge Pérez</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">ID: OPE-4400</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-slate-600 dark:text-slate-300">Septiembre 2023</td>
+<td class="p-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 14px;">location_on</span>
+                                                Centro
+                                            </div>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold">14</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                Completado
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900">
+<div class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                Mostrando <span class="text-slate-900 dark:text-white font-bold">1-5</span> de <span class="text-slate-900 dark:text-white font-bold">48</span> asignaciones
+                            </div>
+<div class="flex gap-2">
+<button class="flex items-center justify-center size-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50">
+<span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+</button>
+<button class="flex items-center justify-center size-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
