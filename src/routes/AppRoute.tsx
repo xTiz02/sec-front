@@ -22,6 +22,9 @@ import { ClientContractDetailPage } from "@/features/contractSchedule/contract/C
 import { AssignmentPage } from "@/features/assignment/AssignmentPage";
 import { AssignmentFormPage } from "@/features/assignment/AssignmentFormPage";
 import { AssignmentDetailPage } from "@/features/assignment/AssignmentDetailPage";
+import { GuardPage } from "@/features/guard/GuardPage";
+import { GuardFormPage } from "@/features/guard/GuardFormPage";
+import { GuardDetailPage } from "@/features/guard/GuardDetailPage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -47,6 +50,10 @@ export const AppRoutes = () => (
           <Route path="employees/new" element={<EmployeeFormPage />} />
           <Route path="employees/:id" element={<EmployeeDetailPage />} />
           <Route path="employees/:id/edit" element={<EmployeeFormPage />} />
+          <Route path="guards" element={<GuardPage />} />
+          <Route path="guards/new" element={<GuardFormPage />} />
+          <Route path="guards/:id" element={<GuardDetailPage />} />
+          <Route path="guards/:id/edit" element={<GuardFormPage />} />
         </Route>
 
         {/* Clients & Unities */}
