@@ -8,6 +8,7 @@ import {
   useUpdateGuardMutation,
   useGetGuardByIdQuery,
 } from "./api/guardApi"
+import { GuardType, GuardTypeLabel } from "./api/guardModel"
 import {
   Field,
   FieldError,
@@ -24,9 +25,18 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { EmployeeSelector } from "@/components/select/EmployeeSelector"
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
+
+const GUARD_TYPE_VALUES = Object.values(GuardType) as [GuardType, ...GuardType[]]
 
 const guardSchema = z.object({
   employeeId: z.coerce
@@ -37,6 +47,9 @@ const guardSchema = z.object({
     .string({ required_error: "El número de licencia es requerido" })
     .min(1, "El número de licencia es requerido")
     .max(50),
+  guardType: z.enum(GUARD_TYPE_VALUES, {
+    message: "El tipo de guardia es requerido",
+  }),
   photoUrl: z.string().max(500).optional().or(z.literal("")),
 })
 
@@ -62,6 +75,7 @@ export const GuardFormPage = () => {
     defaultValues: {
       employeeId: undefined,
       licenseNumber: "",
+      guardType: undefined,
       photoUrl: "",
     },
   })
@@ -71,6 +85,7 @@ export const GuardFormPage = () => {
       form.reset({
         employeeId: guard.employeeId,
         licenseNumber: guard.licenseNumber,
+        guardType: guard.guardType,
         photoUrl: guard.photoUrl ?? "",
       })
     }
@@ -131,12 +146,13 @@ export const GuardFormPage = () => {
           <CardHeader>
             <CardTitle className="text-base">Datos del Guardia</CardTitle>
             <CardDescription>
-              Empleado asociado y número de licencia.
+              Empleado asociado, licencia y tipo de guardia.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Empleado */}
                 <Controller
                   name="employeeId"
                   control={form.control}
@@ -154,6 +170,8 @@ export const GuardFormPage = () => {
                     </Field>
                   )}
                 />
+
+                {/* Número de licencia */}
                 <Controller
                   name="licenseNumber"
                   control={form.control}
@@ -174,7 +192,38 @@ export const GuardFormPage = () => {
                     </Field>
                   )}
                 />
+
+                {/* Tipo de guardia */}
+                <Controller
+                  name="guardType"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>Tipo de Guardia</FieldLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={fieldState.invalid}
+                        >
+                          <SelectValue placeholder="Seleccionar tipo..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {GUARD_TYPE_VALUES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {GuardTypeLabel[type]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
               </div>
+
+              {/* URL de foto */}
               <Controller
                 name="photoUrl"
                 control={form.control}

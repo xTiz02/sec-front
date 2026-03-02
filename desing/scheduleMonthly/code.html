@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Planificador Mensual con Registro de Vacaciones por Rango</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "primary-hover": "#0e4bce",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2130",
+                        "border-light": "#dbdfe6",
+                        "border-dark": "#2d3545",
+                        "text-main": "#111318",
+                        "text-secondary": "#616f89",
+                        "status-success": "#16a34a",
+                        "status-warning": "#d97706",
+                        "status-error": "#dc2626",
+                        "status-over": "#9333ea",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+<style>#vacation-modal:target {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-body min-h-screen flex flex-col overflow-hidden text-text-main dark:text-white">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light dark:border-border-dark px-6 py-3 bg-surface-light dark:bg-surface-dark z-20 shadow-sm shrink-0">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="size-9 flex items-center justify-center bg-primary text-white rounded-lg shadow-sm">
+<span class="material-symbols-outlined">local_police</span>
+</div>
+<div>
+<h2 class="text-base font-bold leading-tight tracking-tight">SecuManager</h2>
+<p class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold">Enterprise</p>
+</div>
+</div>
+<div class="h-6 w-px bg-border-light dark:border-border-dark"></div>
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-text-secondary hover:text-primary transition-colors text-sm font-medium" href="#">Dashboard</a>
+<a class="text-text-main dark:text-white text-sm font-bold relative after:content-[''] after:absolute after:-bottom-5 after:left-0 after:w-full after:h-0.5 after:bg-primary" href="#">Planificador</a>
+<a class="text-text-secondary hover:text-primary transition-colors text-sm font-medium" href="#">Guardias</a>
+<a class="text-text-secondary hover:text-primary transition-colors text-sm font-medium" href="#">Reportes</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-3">
+<button class="relative p-2 text-text-secondary hover:bg-background-light dark:hover:bg-border-dark rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-2 right-2 size-1.5 bg-red-500 rounded-full border border-white dark:border-surface-dark"></span>
+</button>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 border border-border-light dark:border-border-dark cursor-pointer ring-2 ring-transparent hover:ring-primary/20 transition-all" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBeoTcm6-U0DFYxhldEcrbC6OCK_eAscgLbOl1l7lVjZFa4jBw7ODgCCweGhA9ZoKH41sMqrxWHfasX0OJQDr0EI7lhTssJGhpGMQgNRxZnyxmL1otAhYpHGQ7YqzwEpmyataoeGWs6KMnPik60y1M4xJz7mn5gmChaUeI2GnWjV2o2E_yPZ72JgHbvqewk3MiuKt_y_-GPyV3oqxT5KkotRZ_3QSaAiUbH9S3lueJoIHg7l-YXLIzN9g-uzm57LMNzT-nS1YpTTA");'></div>
+</div>
+</div>
+</header>
+<div class="flex flex-col flex-1 overflow-hidden h-full">
+<div class="flex flex-col h-[50%] min-h-[400px] border-b-4 border-border-light dark:border-border-dark relative shrink-0">
+<div class="flex flex-col gap-4 p-4 bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark shadow-sm z-10 shrink-0">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="flex flex-col gap-1">
+<h1 class="text-xl font-extrabold tracking-tight">Planificador Mensual Operativo</h1>
+<p class="text-text-secondary text-xs">Asignación de guardias, vacaciones y días libres por contrato.</p>
+</div>
+<div class="hidden xl:flex gap-3">
+<div class="flex items-center gap-3 px-3 py-1.5 bg-background-light dark:bg-background-dark rounded border border-border-light dark:border-border-dark">
+<div class="p-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded">
+<span class="material-symbols-outlined text-[16px]">calendar_month</span>
+</div>
+<div>
+<p class="text-[10px] text-text-secondary font-bold uppercase">Total Horas</p>
+<p class="text-xs font-bold">12,450h</p>
+</div>
+</div>
+<div class="flex items-center gap-3 px-3 py-1.5 bg-background-light dark:bg-background-dark rounded border border-border-light dark:border-border-dark">
+<div class="p-1 bg-red-100 dark:bg-red-900/30 text-red-600 rounded">
+<span class="material-symbols-outlined text-[16px]">person_off</span>
+</div>
+<div>
+<p class="text-[10px] text-text-secondary font-bold uppercase">Descubiertos</p>
+<p class="text-xs font-bold text-red-600">8 Turnos</p>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end mt-1">
+<div class="md:col-span-3">
+<label class="block text-[10px] font-semibold text-text-secondary mb-1 uppercase tracking-wide">Contrato Cliente</label>
+<div class="relative group">
+<div class="flex items-center justify-between w-full p-2 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
+<div class="flex items-center gap-2">
+<div class="size-5 bg-blue-600 rounded flex items-center justify-center text-white text-[9px] font-bold">SM</div>
+<span class="text-xs font-semibold">Samsung Electronics</span>
+</div>
+<span class="material-symbols-outlined text-text-secondary text-[16px]">expand_more</span>
+</div>
+</div>
+</div>
+<div class="md:col-span-3">
+<label class="block text-[10px] font-semibold text-text-secondary mb-1 uppercase tracking-wide">Unidad Operativa</label>
+<div class="relative group">
+<div class="flex items-center justify-between w-full p-2 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
+<span class="text-xs font-medium">Sucursal Norte - Planta 1</span>
+<span class="material-symbols-outlined text-text-secondary text-[16px]">expand_more</span>
+</div>
+</div>
+</div>
+<div class="md:col-span-4">
+<label class="block text-[10px] font-semibold text-text-secondary mb-1 uppercase tracking-wide">Periodo (ScheduleMonthly)</label>
+<div class="flex gap-2">
+<div class="flex-1 relative group">
+<div class="flex items-center justify-between w-full p-2 bg-white dark:bg-surface-dark border border-primary text-primary rounded-lg cursor-pointer shadow-sm ring-1 ring-primary/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">event_note</span>
+<span class="text-xs font-bold">Octubre 2023 - Versión Final</span>
+</div>
+<span class="material-symbols-outlined text-[16px]">edit_calendar</span>
+</div>
+</div>
+<button class="p-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors tooltip" title="Crear Nuevo Periodo">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+<div class="md:col-span-2 flex justify-end gap-2">
+<button class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-border-dark text-text-main dark:text-white text-xs font-bold rounded-lg transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span class="hidden md:inline">PDF</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex-1 p-4 overflow-hidden bg-background-light dark:bg-background-dark">
+<div class="h-full flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark shadow-sm overflow-hidden">
+<div class="grid grid-cols-7 border-b border-border-light dark:border-border-dark bg-background-light/50 dark:bg-surface-dark shrink-0">
+<div class="p-2 text-center text-[10px] font-bold uppercase text-text-secondary tracking-wider">Dom</div>
+<div class="p-2 text-center text-[10px] font-bold uppercase text-text-secondary tracking-wider">Lun</div>
+<div class="p-2 text-center text-[10px] font-bold uppercase text-text-secondary tracking-wider">Mar</div>
+<div class="p-2 text-center text-[10px] font-bold uppercase text-text-secondary tracking-wider">Mié</div>
+<div class="p-2 text-center text-[10px] font-bold uppercase text-text-secondary tracking-wider">Jue</div>
+<div class="p-2 text-center text-[10px] font-bold uppercase text-text-secondary tracking-wider">Vie</div>
+<div class="p-2 text-center text-[10px] font-bold uppercase text-text-secondary tracking-wider">Sáb</div>
+</div>
+<div class="grid grid-cols-7 flex-1 auto-rows-fr overflow-y-auto">
+<div class="border-b border-r border-border-light dark:border-border-dark p-1 bg-background-light/30 dark:bg-background-dark/30 min-h-[80px]"></div>
+<div class="border-b border-r border-border-light dark:border-border-dark p-1 bg-background-light/30 dark:bg-background-dark/30 min-h-[80px]"></div>
+<div class="border-b border-r border-border-light dark:border-border-dark p-1 bg-background-light/30 dark:bg-background-dark/30 min-h-[80px]"></div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">1</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">2 Descansos</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-purple-500"></div>
+<span class="text-[9px] text-purple-600 dark:text-purple-400 font-medium">1 Vacaciones</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">2</span>
+<span class="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-[9px] font-bold px-1 py-0.5 rounded border border-red-200 dark:border-red-800">8/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:4</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:4</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">3 Descansos</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-purple-500"></div>
+<span class="text-[9px] text-purple-600 dark:text-purple-400 font-medium">2 Vacaciones</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">3</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">1 Descanso</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">4</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">2 Descansos</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">5</span>
+<span class="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-[9px] font-bold px-1 py-0.5 rounded border border-purple-200 dark:border-purple-800">12/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:6</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:6</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">1 Descanso</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-purple-500"></div>
+<span class="text-[9px] text-purple-600 dark:text-purple-400 font-medium">1 Vacaciones</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">6</span>
+<span class="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-[9px] font-bold px-1 py-0.5 rounded border border-red-200 dark:border-red-800">6/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:3</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:3</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">4 Descansos</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-purple-500"></div>
+<span class="text-[9px] text-purple-600 dark:text-purple-400 font-medium">3 Vacaciones</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">7</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">2 Descansos</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">8</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">2 Descansos</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">9</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">2 Descansos</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">10</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">1 Descanso</span>
+</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">11</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">3 Descansos</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-purple-500"></div>
+<span class="text-[9px] text-purple-600 dark:text-purple-400 font-medium">2 Vacaciones</span>
+</div>
+</div>
+</div>
+<div class="relative border-b border-r border-primary bg-blue-50/50 dark:bg-blue-900/10 min-h-[80px] flex flex-col ring-2 ring-inset ring-primary z-10 shadow-lg p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-primary dark:text-white">12</span>
+<span class="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-[9px] font-bold px-1 py-0.5 rounded border border-red-200 dark:border-red-800">9/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-primary/70">D:5</span>
+<span class="text-[9px] font-semibold text-primary/70">N:4</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">3 Descansos</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-purple-500"></div>
+<span class="text-[9px] text-purple-600 dark:text-purple-400 font-bold">2 Vacaciones</span>
+</div>
+<div class="text-[9px] text-primary font-bold uppercase tracking-wider mt-1 text-center">Seleccionado</div>
+</div>
+</div>
+<div class="group relative border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors min-h-[80px] flex flex-col p-1.5">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-text-main dark:text-white">13</span>
+<span class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-[9px] font-bold px-1 py-0.5 rounded border border-green-200 dark:border-green-800">10/10</span>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[9px] font-semibold text-text-secondary">D:5</span>
+<span class="text-[9px] font-semibold text-text-secondary">N:5</span>
+</div>
+<div class="mt-auto flex flex-col gap-0.5">
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-orange-400"></div>
+<span class="text-[9px] text-text-secondary font-medium">2 Descansos</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="size-1.5 rounded-full bg-purple-500"></div>
+<span class="text-[9px] text-purple-600 dark:text-purple-400 font-medium">2 Vacaciones</span>
+</div>
+</div>
+</div>
+<div class="relative border-b border-r border-primary/20 bg-orange-50/50 dark:bg-orange-900/10 min-h-[80px] p-2 ring-1 ring-inset ring-orange-200 dark:ring-orange-800/30">
+<span class="text-xs font-bold">14</span>
+</div>
+<div class="relative border-b border-r border-primary/20 bg-orange-50/50 dark:bg-orange-900/10 min-h-[80px] p-2 ring-1 ring-inset ring-orange-200 dark:ring-orange-800/30">
+<span class="text-xs font-bold">15</span>
+</div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">16</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">17</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">18</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">19</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">20</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">21</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">22</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">23</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">24</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">25</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">26</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">27</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">28</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">29</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">30</span></div>
+<div class="border-b border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark min-h-[80px] p-2"><span class="text-xs font-bold">31</span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col bg-surface-light dark:bg-surface-dark overflow-hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+<div class="flex items-center justify-between px-6 py-3 border-b border-border-light dark:border-border-dark bg-background-light/50 dark:bg-surface-dark">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+<span class="text-xl font-extrabold">12</span>
+</div>
+<div>
+<h2 class="text-lg font-bold text-text-main dark:text-white">Jueves, 12 Octubre</h2>
+<p class="text-xs font-semibold text-text-secondary uppercase tracking-wide">Centro de Control de Asignaciones</p>
+</div>
+</div>
+<div class="h-8 w-px bg-border-light dark:border-border-dark mx-2"></div>
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-text-secondary uppercase">Estado Global</span>
+<span class="text-sm font-bold text-red-600">Incompleto (9/10)</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-text-secondary uppercase">Sucursal</span>
+<span class="text-sm font-medium">Planta 1 - Norte</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-border-dark text-text-main dark:text-white text-xs font-bold rounded-lg transition-all shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                        Resetear Día
+                    </button>
+<button class="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg font-bold text-xs shadow-lg shadow-primary/20 flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[16px]">save</span>
+                        Guardar Cambios
+                    </button>
+<button class="p-2 ml-2 text-text-secondary hover:bg-background-light dark:hover:bg-border-dark rounded-full transition-colors">
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+<div class="flex flex-1 overflow-hidden">
+<div class="w-1/4 min-w-[300px] border-r border-border-light dark:border-border-dark p-5 overflow-y-auto bg-background-light/30 dark:bg-background-dark/30">
+<h3 class="text-xs font-bold text-text-secondary uppercase tracking-wider mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">info</span>
+                        Resumen &amp; Herramientas
+                    </h3>
+<div class="grid grid-cols-2 gap-3 mb-6">
+<div class="bg-surface-light dark:bg-surface-dark p-3 rounded-lg border border-border-light dark:border-border-dark shadow-sm">
+<span class="block text-[10px] font-bold text-text-secondary uppercase mb-1">Requeridos</span>
+<span class="text-lg font-extrabold text-primary">10</span>
+<span class="text-[10px] text-text-secondary ml-1">Guardias</span>
+</div>
+<div class="bg-red-50 dark:bg-red-900/10 p-3 rounded-lg border border-red-100 dark:border-red-900/30 shadow-sm">
+<span class="block text-[10px] font-bold text-red-700 dark:text-red-400 uppercase mb-1">Faltantes</span>
+<span class="text-lg font-extrabold text-red-600 dark:text-red-400">1</span>
+<span class="text-[10px] text-red-600/70 ml-1">Guardia</span>
+</div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-0 rounded-lg border border-border-light dark:border-border-dark shadow-sm overflow-hidden flex flex-col h-[calc(100%-140px)]">
+<div class="px-4 py-3 border-b border-border-light dark:border-border-dark bg-orange-50 dark:bg-orange-900/10 flex justify-between items-center">
+<div>
+<h4 class="text-xs font-bold text-orange-800 dark:text-orange-300 uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">beach_access</span>
+                                    AUSENCIAS
+                                </h4>
+<p class="text-[10px] text-orange-700/70 dark:text-orange-300/60 mt-0.5">Vacaciones activas</p>
+</div>
+<a class="p-1.5 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded hover:bg-orange-300 dark:hover:bg-orange-700 transition-colors tooltip" href="#vacation-modal" title="Registrar Vacaciones">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</a>
+</div>
+<div class="flex-1 overflow-y-auto p-2 space-y-2">
+<div class="flex items-center gap-3 p-2 bg-background-light dark:bg-background-dark rounded border border-border-light dark:border-border-dark opacity-80">
+<div class="size-8 rounded-full bg-cover bg-center border border-border-light dark:border-border-dark shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBa3ExgorehGPrB4GIObSOBxMBWPJeSeOK4iu5T-012FmF0S5RSHOg5hTmtJwe32qB4COX7fhMbDYEEBBzOPcdiud3r9lu079ABUAcRRtbpVswbDBYwyevOHWTK-FaOY6h6N0n-am4i7elo1lwC2_hEqi7XHNiNfwVDzWt5RXFBfziZyGUyIqBPisZrbWJmFN-mKj2Cf3pLGRZGhpKNmwUehuF4aEmjALsXensOQ887OCGs2S99wpUHMpgXJ400xmCApvt0J8RbUw");'></div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold text-text-main dark:text-white truncate">Sofia Martinez</p>
+<div class="flex items-center gap-1 text-[10px] text-text-secondary mt-0.5">
+<span class="material-symbols-outlined text-[10px]">calendar_today</span>
+<span>12 Oct - 19 Oct</span>
+</div>
+</div>
+<span class="text-[9px] font-bold text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-300 px-1.5 py-0.5 rounded">Ausente</span>
+</div>
+<div class="flex items-center gap-3 p-2 bg-background-light dark:bg-background-dark rounded border border-border-light dark:border-border-dark opacity-80">
+<div class="size-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">CR</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold text-text-main dark:text-white truncate">Carlos Rodriguez</p>
+<div class="flex items-center gap-1 text-[10px] text-text-secondary mt-0.5">
+<span class="material-symbols-outlined text-[10px]">calendar_today</span>
+<span>05 Oct - 20 Oct</span>
+</div>
+</div>
+<span class="text-[9px] font-bold text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-300 px-1.5 py-0.5 rounded">Ausente</span>
+</div>
+</div>
+</div>
+</div>
+<div class="w-2/4 min-w-[400px] border-r border-border-light dark:border-border-dark flex flex-col bg-surface-light dark:bg-surface-dark">
+<div class="p-4 border-b border-border-light dark:border-border-dark flex items-center justify-between bg-gray-50/50 dark:bg-surface-dark">
+<h3 class="text-xs font-bold text-text-secondary uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">list_alt</span>
+                            Turnos y Asignaciones
+                        </h3>
+<div class="flex gap-2">
+<span class="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800">Mañana: OK</span>
+<span class="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full font-bold border border-red-200 dark:border-red-800">Noche: -1</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<div class="space-y-3">
+<div class="flex items-center justify-between sticky top-0 bg-surface-light dark:bg-surface-dark z-10 py-2 border-b border-dashed border-border-light dark:border-border-dark">
+<div class="flex items-center gap-2">
+<div class="p-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded">
+<span class="material-symbols-outlined text-[18px]">wb_sunny</span>
+</div>
+<div>
+<h3 class="font-bold text-sm text-text-main dark:text-white">Turno Mañana</h3>
+<p class="text-[11px] text-text-secondary">06:00 - 14:00 (8h)</p>
+</div>
+</div>
+<span class="text-xs font-bold text-green-600">5/5 Completo</span>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+<div class="flex items-center justify-between bg-white dark:bg-surface-dark p-3 rounded-lg border border-border-light dark:border-border-dark shadow-sm group hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-cover bg-center border border-border-light dark:border-border-dark" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBa3ExgorehGPrB4GIObSOBxMBWPJeSeOK4iu5T-012FmF0S5RSHOg5hTmtJwe32qB4COX7fhMbDYEEBBzOPcdiud3r9lu079ABUAcRRtbpVswbDBYwyevOHWTK-FaOY6h6N0n-am4i7elo1lwC2_hEqi7XHNiNfwVDzWt5RXFBfziZyGUyIqBPisZrbWJmFN-mKj2Cf3pLGRZGhpKNmwUehuF4aEmjALsXensOQ887OCGs2S99wpUHMpgXJ400xmCApvt0J8RbUw");'></div>
+<div>
+<p class="text-sm font-bold text-text-main dark:text-white">Maria Gonzalez</p>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded font-medium">Titular</span>
+<span class="text-[10px] text-text-secondary">#4021</span>
+</div>
+</div>
+</div>
+<button class="text-text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="flex items-center justify-between bg-white dark:bg-surface-dark p-3 rounded-lg border border-border-light dark:border-border-dark shadow-sm group hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">JP</div>
+<div>
+<p class="text-sm font-bold text-text-main dark:text-white">Juan Perez</p>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded font-medium">Titular</span>
+<span class="text-[10px] text-text-secondary">#8822</span>
+</div>
+</div>
+</div>
+<button class="text-text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="flex items-center justify-between bg-white dark:bg-surface-dark p-3 rounded-lg border border-border-light dark:border-border-dark shadow-sm group hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-cover bg-center border border-border-light dark:border-border-dark" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAD-3l-WKB6hMaqXpUpV35DuMY58Ot6xqlZJqPVR9nRvY56g3FMIBZC8HW2U7_qOrLO8bFO4eb016pIO3jRvG2gLtmm3taEvi11rAua8G1xWXDjN5SCHb0pKr7gl7iUykjxQdjs1b2YLJOQ6gHgr5J9TZ_Pmkw8tIB4Im85eariZqDg2zhVNQvM6sKinJQHcQc2-gTfO5XxNmsDtxsXCVPZUJEEwtzctkTAVzpVhDmZ4ZAGRI_RZ7Y0o7-eTAZ04TykPs7U6pkfeQ");'></div>
+<div>
+<p class="text-sm font-bold text-text-main dark:text-white">Luis Rodriguez</p>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded font-medium">Descansero</span>
+<span class="text-[10px] text-text-secondary">#9901</span>
+</div>
+</div>
+</div>
+<button class="text-text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<div class="space-y-3 pt-2">
+<div class="flex items-center justify-between sticky top-0 bg-surface-light dark:bg-surface-dark z-10 py-2 border-b border-dashed border-border-light dark:border-border-dark">
+<div class="flex items-center gap-2">
+<div class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded">
+<span class="material-symbols-outlined text-[18px]">nights_stay</span>
+</div>
+<div>
+<h3 class="font-bold text-sm text-text-main dark:text-white">Turno Noche</h3>
+<p class="text-[11px] text-text-secondary">22:00 - 06:00 (8h)</p>
+</div>
+</div>
+<span class="text-xs font-bold text-red-600">4/5 Faltante</span>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+<div class="flex items-center justify-between bg-white dark:bg-surface-dark p-3 rounded-lg border border-border-light dark:border-border-dark shadow-sm group hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-cover bg-center border border-border-light dark:border-border-dark" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCoBY2lTApYgJnL4M_8S8IDzCJDh6FuCEwmd64iVVvffQPAFxKnQkdwdwUzMG20MOS0GKGyM9qrn5oZrs6vPH2EhkN3LFJROyFm-H_2sA0oz_PQb_7GU9VXsUOhFKUZW6zRM_Yq2CxmiqR0D0yYnEEYfI1c7jWwd9U_v3N60C1l6xMQ0v-H0Izvri5l31umMqhJdIaeRrakTzXcZ73sSaKUrIHB-sxNeQrIgl2EWYSGFf6119CSEqgnzaKZFfFJje5no19vqNsSdQ");'></div>
+<div>
+<p class="text-sm font-bold text-text-main dark:text-white">Carlos Ruiz</p>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded font-medium">Titular</span>
+<span class="text-[10px] text-text-secondary">#1209</span>
+</div>
+</div>
+</div>
+<button class="text-text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="border-2 border-dashed border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-900/10 rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors text-center group h-[66px] hover:bg-red-100/50">
+<div class="flex items-center gap-2 text-red-400 group-hover:text-red-500">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span class="text-xs font-bold">Asignar Guardia</span>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-3 pt-2">
+<div class="flex items-center justify-between sticky top-0 bg-surface-light dark:bg-surface-dark z-10 py-2 border-b border-dashed border-border-light dark:border-border-dark">
+<div class="flex items-center gap-2">
+<div class="p-1.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded">
+<span class="material-symbols-outlined text-[18px]">chair</span>
+</div>
+<div>
+<h3 class="font-bold text-sm text-text-main dark:text-white uppercase tracking-wider">Descansos Asignados</h3>
+<p class="text-[11px] text-text-secondary">Guardias Libres</p>
+</div>
+</div>
+<span class="text-xs font-bold text-gray-500">3 Asignados</span>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+<div class="flex items-center justify-between bg-gray-50/50 dark:bg-surface-dark/50 p-3 rounded-lg border border-border-light dark:border-border-dark shadow-sm group hover:border-gray-400 transition-colors">
+<div class="flex items-center gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
+<div class="size-9 rounded-full bg-cover bg-center border border-border-light dark:border-border-dark grayscale" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBa3ExgorehGPrB4GIObSOBxMBWPJeSeOK4iu5T-012FmF0S5RSHOg5hTmtJwe32qB4COX7fhMbDYEEBBzOPcdiud3r9lu079ABUAcRRtbpVswbDBYwyevOHWTK-FaOY6h6N0n-am4i7elo1lwC2_hEqi7XHNiNfwVDzWt5RXFBfziZyGUyIqBPisZrbWJmFN-mKj2Cf3pLGRZGhpKNmwUehuF4aEmjALsXensOQ887OCGs2S99wpUHMpgXJ400xmCApvt0J8RbUw");'></div>
+<div>
+<p class="text-sm font-bold text-text-main dark:text-white">Lucia Mendez</p>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">weekend</span> Descanso
+                                            </span>
+</div>
+</div>
+</div>
+<button class="text-text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="flex items-center justify-between bg-gray-50/50 dark:bg-surface-dark/50 p-3 rounded-lg border border-border-light dark:border-border-dark shadow-sm group hover:border-gray-400 transition-colors">
+<div class="flex items-center gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
+<div class="size-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold grayscale">RP</div>
+<div>
+<p class="text-sm font-bold text-text-main dark:text-white">Roberto Perez</p>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">weekend</span> Descanso
+                                            </span>
+</div>
+</div>
+</div>
+<button class="text-text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="flex items-center justify-between bg-gray-50/50 dark:bg-surface-dark/50 p-3 rounded-lg border border-border-light dark:border-border-dark shadow-sm group hover:border-gray-400 transition-colors">
+<div class="flex items-center gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
+<div class="size-9 rounded-full bg-cover bg-center border border-border-light dark:border-border-dark grayscale" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBa3ExgorehGPrB4GIObSOBxMBWPJeSeOK4iu5T-012FmF0S5RSHOg5hTmtJwe32qB4COX7fhMbDYEEBBzOPcdiud3r9lu079ABUAcRRtbpVswbDBYwyevOHWTK-FaOY6h6N0n-am4i7elo1lwC2_hEqi7XHNiNfwVDzWt5RXFBfziZyGUyIqBPisZrbWJmFN-mKj2Cf3pLGRZGhpKNmwUehuF4aEmjALsXensOQ887OCGs2S99wpUHMpgXJ400xmCApvt0J8RbUw");'></div>
+<div>
+<p class="text-sm font-bold text-text-main dark:text-white">Ana Torres</p>
+<div class="flex items-center gap-1.5">
+<span class="text-[10px] bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">weekend</span> Descanso
+                                            </span>
+</div>
+</div>
+</div>
+<button class="text-text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/20 rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors text-center group h-[66px] hover:bg-gray-100/50">
+<div class="flex items-center gap-2 text-gray-400 group-hover:text-gray-500">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span class="text-xs font-bold">Asignar Descanso</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="w-1/4 min-w-[300px] flex flex-col bg-background-light/30 dark:bg-background-dark/30">
+<div class="p-4 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xs font-bold text-text-secondary uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">person_search</span>
+                                Disponibles
+                            </h3>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">34 Total</span>
+</div>
+<div class="relative group mb-3">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-text-secondary text-[16px]">search</span>
+</div>
+<input class="block w-full pl-8 pr-3 py-2 text-xs bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md text-text-main dark:text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-shadow" placeholder="Buscar por nombre o ID..." type="text"/>
+</div>
+<div class="flex gap-1">
+<button class="flex-1 text-[10px] bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:border-primary text-text-main dark:text-white px-1.5 py-1.5 rounded font-bold transition-colors shadow-sm">Titulares</button>
+<button class="flex-1 text-[10px] bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:border-primary text-text-secondary hover:text-text-main px-1.5 py-1.5 rounded font-medium transition-colors shadow-sm">Descanseros</button>
+<button class="flex-1 text-[10px] bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:border-primary text-text-secondary hover:text-text-main px-1.5 py-1.5 rounded font-medium transition-colors shadow-sm">IPS</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-3 space-y-2">
+<div class="relative flex items-center justify-between p-2.5 bg-gray-50 dark:bg-surface-dark/40 border border-border-light dark:border-border-dark rounded-lg opacity-60 cursor-not-allowed group">
+<div class="absolute -right-2 -top-2 z-20">
+<span class="text-[9px] font-bold bg-purple-500 text-white px-1.5 py-0.5 rounded shadow-sm">EN VACACIONES</span>
+</div>
+<div class="absolute inset-0 bg-white/20 dark:bg-black/20 rounded-lg z-10 pointer-events-none"></div>
+<div class="flex items-center gap-3 grayscale">
+<div class="size-8 rounded-full bg-cover bg-center border border-border-light dark:border-border-dark shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBa3ExgorehGPrB4GIObSOBxMBWPJeSeOK4iu5T-012FmF0S5RSHOg5hTmtJwe32qB4COX7fhMbDYEEBBzOPcdiud3r9lu079ABUAcRRtbpVswbDBYwyevOHWTK-FaOY6h6N0n-am4i7elo1lwC2_hEqi7XHNiNfwVDzWt5RXFBfziZyGUyIqBPisZrbWJmFN-mKj2Cf3pLGRZGhpKNmwUehuF4aEmjALsXensOQ887OCGs2S99wpUHMpgXJ400xmCApvt0J8RbUw");'></div>
+<div>
+<p class="text-xs font-bold text-text-main dark:text-white">Sofia Martinez</p>
+<p class="text-[10px] text-text-secondary">Ausente · 12 Oct - 19 Oct</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-text-secondary">beach_access</span>
+</div>
+<div class="relative flex items-center justify-between p-2.5 bg-gray-50 dark:bg-surface-dark/40 border border-border-light dark:border-border-dark rounded-lg opacity-60 cursor-not-allowed group">
+<div class="absolute -right-2 -top-2 z-20">
+<span class="text-[9px] font-bold bg-purple-500 text-white px-1.5 py-0.5 rounded shadow-sm">EN VACACIONES</span>
+</div>
+<div class="absolute inset-0 bg-white/20 dark:bg-black/20 rounded-lg z-10 pointer-events-none"></div>
+<div class="flex items-center gap-3 grayscale">
+<div class="size-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">CR</div>
+<div>
+<p class="text-xs font-bold text-text-main dark:text-white">Carlos Rodriguez</p>
+<p class="text-[10px] text-text-secondary">Ausente · 05 Oct - 20 Oct</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-text-secondary">beach_access</span>
+</div>
+<div class="flex items-center justify-between p-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg hover:border-primary/50 hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">RG</div>
+<div>
+<p class="text-xs font-bold text-text-main dark:text-white">Roberto Gomez</p>
+<p class="text-[10px] text-text-secondary">Titular · Disp. Total</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-text-secondary group-hover:text-primary">drag_indicator</span>
+</div>
+<div class="flex items-center justify-between p-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg hover:border-primary/50 hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold shrink-0">TR</div>
+<div>
+<p class="text-xs font-bold text-text-main dark:text-white">Tomas Ramos</p>
+<p class="text-[10px] text-text-secondary">Descansero · Disp. Total</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-text-secondary group-hover:text-primary">drag_indicator</span>
+</div>
+<div class="flex items-center justify-between p-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg hover:border-primary/50 hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold shrink-0">EX</div>
+<div>
+<p class="text-xs font-bold text-text-main dark:text-white">Agente IPS #001</p>
+<p class="text-[10px] text-text-secondary">Externo · Por Horas</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-text-secondary group-hover:text-primary">drag_indicator</span>
+</div>
+<div class="flex items-center justify-between p-2.5 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg hover:border-primary/50 hover:shadow-md transition-all cursor-grab active:cursor-grabbing group opacity-70">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-bold shrink-0">MP</div>
+<div>
+<p class="text-xs font-bold text-text-main dark:text-white">Mario Perez</p>
+<p class="text-[10px] text-text-secondary">Titular · Ya Asignado</p>
+</div>
+</div>
+<span class="text-[10px] font-bold text-orange-500 bg-orange-50 dark:bg-orange-900/20 px-1.5 py-0.5 rounded">Ocupado</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center p-4" id="vacation-modal">
+<div class="bg-surface-light dark:bg-surface-dark w-full max-w-md rounded-xl shadow-2xl border border-border-light dark:border-border-dark flex flex-col">
+<div class="flex items-center justify-between p-4 border-b border-border-light dark:border-border-dark">
+<h3 class="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-purple-500">beach_access</span>
+            Registrar Vacaciones
+        </h3>
+<a class="text-text-secondary hover:text-red-500 transition-colors" href="#">
+<span class="material-symbols-outlined">close</span>
+</a>
+</div>
+<div class="p-6 flex flex-col gap-5">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold uppercase text-text-secondary tracking-wider">Guardia</label>
+<div class="relative">
+<input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none" placeholder="Buscar guardia..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-text-secondary">search</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold uppercase text-text-secondary tracking-wider">Desde</label>
+<div class="relative">
+<input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none" type="date"/>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold uppercase text-text-secondary tracking-wider">Hasta</label>
+<div class="relative">
+<input class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none" type="date"/>
+</div>
+</div>
+</div>
+<div class="p-3 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-900/30">
+<p class="text-xs text-purple-800 dark:text-purple-300 flex gap-2">
+<span class="material-symbols-outlined text-[16px]">info</span>
+                Las vacaciones bloquearán al guardia para cualquier asignación durante el rango seleccionado.
+            </p>
+</div>
+</div>
+<div class="p-4 border-t border-border-light dark:border-border-dark flex justify-end gap-3 bg-gray-50 dark:bg-surface-dark rounded-b-xl">
+<a class="px-4 py-2 text-sm font-bold text-text-secondary hover:text-text-main transition-colors" href="#">Cancelar</a>
+<a class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[18px]">save</span>
+            Guardar Vacaciones
+        </a>
+</div>
+</div>
+</div>
+</div></body></html>

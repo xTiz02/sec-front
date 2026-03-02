@@ -23,6 +23,9 @@ const TAG_TYPES = [
   "ContractScheduleUnitTemplate",
   "TurnAndHour",
   "WeeklySchedule",
+  "GuardAssignment",
+  "GuardUnitySchedule",
+  "DailyAssignment",
 ]
 
 export const baseApi = createApi({

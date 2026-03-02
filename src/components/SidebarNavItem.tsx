@@ -65,7 +65,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: "Plantillas de Turno", path: "/modules/scheduling/turn-templates" },
       { label: "Contratos de Unidad", path: "/modules/scheduling/contracts" },
       { label: "Configurar Plantilla Semanal", path: "/modules/scheduling/weekly-builder" },
-      { label: "Horarios Mensuales", path: "/modules/scheduling/monthly" },
+      { label: "Planificador Mensual", path: "/modules/scheduling/monthly-scheduler" },
       { label: "Asignaciones", path: "/modules/scheduling/assignments" },
     ],
   },

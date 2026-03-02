@@ -15,6 +15,8 @@ import {
   GenderLabel,
   IdentificationType,
   IdentificationTypeLabel,
+  EmployeeType,
+  EmployeeTypeLabel,
 } from "./api/employeeModel";
 import {
   Field,
@@ -66,6 +68,9 @@ const employeeSchema = z.object({
   birthDate: z.string().optional().or(z.literal("")),
   country: z.nativeEnum(Country).optional(),
   gender: z.nativeEnum(Gender).optional(),
+  employeeType: z.nativeEnum(EmployeeType, {
+    required_error: "El tipo de empleado es requerido",
+  }),
   userId: z.coerce.number().int().positive().optional().or(z.literal("")),
 });
 
@@ -95,6 +100,7 @@ export const EmployeeFormPage = () => {
       mobilePhone: "",
       address: "",
       birthDate: "",
+      employeeType: EmployeeType.NONE,
     },
   });
 
@@ -113,6 +119,7 @@ export const EmployeeFormPage = () => {
         birthDate: employee.birthDate ?? "",
         country: employee.country,
         gender: employee.gender,
+        employeeType: employee.employeeType ?? EmployeeType.NONE,
         userId: employee.userId ?? "",
       });
     }
@@ -438,10 +445,38 @@ export const EmployeeFormPage = () => {
           <CardHeader>
             <CardTitle className="text-base">Datos del Sistema</CardTitle>
             <CardDescription>
-              Vinculación con el usuario del sistema (opcional).
+              Tipo de empleado y vinculación con el usuario del sistema.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <Controller
+              name="employeeType"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="max-w-xs">
+                  <FieldLabel htmlFor="employeeType">Tipo de Empleado</FieldLabel>
+                  <Select
+                    key={field.value ?? "empty"}
+                    value={field.value ?? undefined}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="employeeType" aria-invalid={fieldState.invalid}>
+                      <SelectValue placeholder="Seleccionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(EmployeeTypeLabel).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>
+                          {v}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
             <Controller
               name="userId"
               control={form.control}

@@ -110,6 +110,7 @@ export interface ContractScheduleUnitTemplateDto {
   numOfGuards: number
   numTurnDay: number
   numTurnNight: number
+  turnAndHours?: TurnAndHourDto[]
 }
 
 export interface CreateContractScheduleUnitTemplateRequest {

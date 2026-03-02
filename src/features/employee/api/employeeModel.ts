@@ -71,6 +71,22 @@ export const IdentificationTypeLabel: Record<IdentificationType, string> = {
   [IdentificationType.PASSPORT]: "Pasaporte",
   [IdentificationType.OTHER]: "Otro",
 }
+// ─── Employee Type ────────────────────────────────────────────────────────────
+
+export enum EmployeeType {
+  ADMINISTRATIVE = "ADMINISTRATIVE",
+  HEAD_OF_OPERATIONS = "HEAD_OF_OPERATIONS",
+  SECURITY_GUARD = "SECURITY_GUARD",
+  NONE = "NONE",
+}
+
+export const EmployeeTypeLabel: Record<EmployeeType, string> = {
+  [EmployeeType.ADMINISTRATIVE]: "Administrativo",
+  [EmployeeType.HEAD_OF_OPERATIONS]: "Jefe de Operaciones",
+  [EmployeeType.SECURITY_GUARD]: "Guardia de Seguridad",
+  [EmployeeType.NONE]: "Sin rol",
+}
+
 // ─── Employee ─────────────────────────────────────────────────────────────────
 
 export interface EmployeeDto {
@@ -86,6 +102,7 @@ export interface EmployeeDto {
   country?: Country
   gender?: Gender
   identificationType?: IdentificationType
+  employeeType?: EmployeeType
 }
 
 export interface EmployeeSummaryDto {
@@ -108,6 +125,7 @@ export interface CreateEmployeeRequest {
   birthDate?: string
   country?: Country
   gender?: Gender
+    
 }
 
 export type UpdateEmployeeRequest = Partial<CreateEmployeeRequest>
