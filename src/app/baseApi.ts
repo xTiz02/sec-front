@@ -26,6 +26,7 @@ const TAG_TYPES = [
   "GuardAssignment",
   "GuardUnitySchedule",
   "DailyAssignment",
+  "ScheduleException",
 ]
 
 export const baseApi = createApi({
