@@ -8,7 +8,7 @@ import type {
   CreateDailyAssignmentRequest,
   CreateGuardMonthlyAssignmentRequest,
   CreateBulkFreeDayRequest,
-  CreateBulkVacationRequest,
+  CreateVacationAssignmentRequest,
 } from "./monthlySchedulerModel"
 
 export const monthlySchedulerApi = baseApi.injectEndpoints({
@@ -144,13 +144,13 @@ export const monthlySchedulerApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "DailyAssignment", id: "LIST" }],
     }),
 
-    /** Create VACATIONAL assignments for a guard across a date range */
-    createBulkVacationAssignments: builder.mutation<
-      DateGuardUnityAssignmentDto[],
-      CreateBulkVacationRequest
+    /** Create a VACATIONAL assignment — single day (toDate omitted) or date range (toDate set) */
+    createVacationAssignment: builder.mutation<
+      DateGuardUnityAssignmentDto,
+      CreateVacationAssignmentRequest
     >({
       query: body => ({
-        url: `/date-guard-unity-assignment/bulk-vacations`,
+        url: `/date-guard-unity-assignment/vacation`,
         method: "POST",
         body,
       }),
@@ -180,6 +180,6 @@ export const {
   useCreateGuardMonthlyAssignmentMutation,
   useDeleteGuardMonthlyAssignmentMutation,
   useCreateBulkFreeDayAssignmentsMutation,
-  useCreateBulkVacationAssignmentsMutation,
+  useCreateVacationAssignmentMutation,
   useRemoveVacationAssignmentMutation,
 } = monthlySchedulerApi

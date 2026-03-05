@@ -65,8 +65,32 @@ export function CalendarDayCell({
       ? template.turnAndHours.reduce((sum, t) => sum + (t.turnTemplate?.numGuards ?? 0), 0)
       : (template?.numOfGuards ?? 0)
   const assigned = stats?.normalCount ?? 0
-  const dayCount = stats?.dayTurnCount ?? 0
-  const nightCount = stats?.nightTurnCount ?? 0
+
+  // Resolve day/night turn IDs from the contract schedule template
+  // (more reliable than relying on turnAndHour.turnTemplate being eagerly loaded in assignments)
+  const dayTurnAndHourIds = new Set(
+    template?.turnAndHours?.filter(t => t.turnTemplate?.turnType === "DAY").map(t => t.id) ?? [],
+  )
+  const nightTurnAndHourIds = new Set(
+    template?.turnAndHours?.filter(t => t.turnTemplate?.turnType === "NIGHT").map(t => t.id) ?? [],
+  )
+  const dayCount = stats?.assignments.filter(
+    a =>
+      a.turnAndHourId != null &&
+      dayTurnAndHourIds.has(a.turnAndHourId) &&
+      a.scheduleAssignmentType !== "FREE_DAY" &&
+      a.scheduleAssignmentType !== "VACATIONAL" &&
+      !a.hasVacation,
+  ).length ?? 0
+  const nightCount = stats?.assignments.filter(
+    a =>
+      a.turnAndHourId != null &&
+      nightTurnAndHourIds.has(a.turnAndHourId) &&
+      a.scheduleAssignmentType !== "FREE_DAY" &&
+      a.scheduleAssignmentType !== "VACATIONAL" &&
+      !a.hasVacation,
+  ).length ?? 0
+
   const vacCount = stats?.vacationCount ?? 0
   const restCount = stats?.freeDayCount ?? 0
 

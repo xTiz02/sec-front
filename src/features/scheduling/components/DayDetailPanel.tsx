@@ -208,7 +208,15 @@ interface AssignVacationDialogProps {
   onClose: () => void
   date: string
   guardSchedules: GuardUnityScheduleAssignmentDto[]
+  allCalendarAssignments: DateGuardUnityAssignmentDto[]
   onAssign: (guard: GuardDto, guardType: GuardType, dateFrom: string, dateTo: string) => Promise<void>
+}
+
+function formatShortDate(dateStr: string) {
+  return new Date(dateStr + "T00:00:00").toLocaleDateString("es-PE", {
+    day: "numeric",
+    month: "short",
+  })
 }
 
 function AssignVacationDialog({
@@ -216,6 +224,7 @@ function AssignVacationDialog({
   onClose,
   date,
   guardSchedules,
+  allCalendarAssignments,
   onAssign,
 }: AssignVacationDialogProps) {
   const [dateFrom, setDateFrom] = useState(date)
@@ -229,9 +238,36 @@ function AssignVacationDialog({
     }
   }, [open, date])
 
+  const isRangeValid = !!dateFrom && !!dateTo && dateTo >= dateFrom
+
+  /** For each gsId, find any existing assignment that overlaps [dateFrom, dateTo] */
+  const conflictMap = useMemo(() => {
+    const map = new Map<number, string>()
+    if (!isRangeValid) return map
+    for (const gs of guardSchedules) {
+      const conflict = allCalendarAssignments.find(a => {
+        if (a.guardUnityScheduleAssignmentId !== gs.id) return false
+        const aStart = a.date ?? ""
+        const aEnd = a.toDate ?? a.date ?? ""
+        return aStart <= dateTo && aEnd >= dateFrom
+      })
+      if (conflict) {
+        const cStart = conflict.date ?? ""
+        const cEnd = conflict.toDate ?? conflict.date ?? ""
+        map.set(
+          gs.id,
+          cStart === cEnd
+            ? `Ocupado el ${formatShortDate(cStart)}`
+            : `Ocupado ${formatShortDate(cStart)} – ${formatShortDate(cEnd)}`,
+        )
+      }
+    }
+    return map
+  }, [guardSchedules, allCalendarAssignments, dateFrom, dateTo, isRangeValid])
+
   const handleAssign = async (gs: GuardUnityScheduleAssignmentDto) => {
     const guard = gs.guardAssignment?.guard
-    if (!guard) return
+    if (!guard || conflictMap.has(gs.id)) return
     setAssigning(gs.id)
     try {
       await onAssign(guard, gs.guardType, dateFrom, dateTo)
@@ -239,8 +275,6 @@ function AssignVacationDialog({
       setAssigning(null)
     }
   }
-
-  const isRangeValid = !!dateFrom && !!dateTo && dateTo >= dateFrom
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
@@ -251,7 +285,7 @@ function AssignVacationDialog({
             Asignar Vacaciones
           </DialogTitle>
           <DialogDescription>
-            Selecciona el rango de fechas y el guardia que tomará vacaciones.
+            Selecciona el rango de fechas. El rango debe estar libre para cada guardia.
           </DialogDescription>
         </DialogHeader>
 
@@ -279,16 +313,32 @@ function AssignVacationDialog({
           </div>
         </div>
 
+        {dateFrom && dateTo && dateFrom === dateTo && (
+          <p className="text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded">
+            Día único: {formatShortDate(dateFrom)}
+          </p>
+        )}
+        {isRangeValid && dateFrom !== dateTo && (
+          <p className="text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded">
+            Rango: {formatShortDate(dateFrom)} – {formatShortDate(dateTo)}
+          </p>
+        )}
+
         {/* Guard list */}
         <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
           {guardSchedules.map(gs => {
             const emp = gs.guardAssignment?.guard?.employee
+            const conflict = conflictMap.get(gs.id)
             const isAssigning = assigning === gs.id
+            const blocked = !!conflict
 
             return (
               <div
                 key={gs.id}
-                className="flex items-center justify-between p-3 border border-border rounded-lg bg-card"
+                className={cn(
+                  "flex items-center justify-between p-3 border border-border rounded-lg bg-card",
+                  blocked && "opacity-60",
+                )}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <Avatar className="size-8 shrink-0">
@@ -302,18 +352,19 @@ function AssignVacationDialog({
                       {emp?.firstName ?? "Guardia"} {emp?.lastName ?? ""}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      {GuardTypeLabel[gs.guardType]}
+                      {conflict ?? GuardTypeLabel[gs.guardType]}
                     </p>
                   </div>
                 </div>
                 <Button
                   size="sm"
-                  disabled={!isRangeValid || isAssigning || assigning !== null}
+                  variant={blocked ? "outline" : "default"}
+                  disabled={!isRangeValid || blocked || isAssigning || assigning !== null}
                   onClick={() => handleAssign(gs)}
                   className="shrink-0 ml-3"
                 >
                   {isAssigning ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                  {isAssigning ? "Asignando..." : "Asignar"}
+                  {blocked ? "Ocupado" : isAssigning ? "Asignando..." : "Asignar"}
                 </Button>
               </div>
             )
@@ -345,7 +396,9 @@ interface DayDetailPanelProps {
   onRemoveFromMonthlyPool: (gsId: number) => Promise<void>
   /** Assign FREE_DAY; allWeekday=true → create for every occurrence of this weekday in the month */
   onAddFreeDay: (guard: GuardDto, guardType: GuardType, allWeekday: boolean) => Promise<void>
-  /** Assign VACATIONAL across a date range */
+  /** All calendar assignments for the month — used for vacation conflict detection */
+  allCalendarAssignments: DateGuardUnityAssignmentDto[]
+  /** Assign VACATIONAL — single day (dateFrom===dateTo) or date range */
   onAddVacation: (guard: GuardDto, guardType: GuardType, dateFrom: string, dateTo: string) => Promise<void>
   /** Remove a vacation (VACATIONAL) daily assignment */
   onRemoveVacation: (assignmentId: number) => Promise<void>
@@ -601,7 +654,11 @@ export function DayDetailPanel({
                         <p className="text-xs font-bold text-foreground truncate">
                           {emp?.firstName ?? "?"} {emp?.lastName ?? ""}
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Vacaciones</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {a.toDate && a.toDate !== a.date
+                            ? `${formatShortDate(a.date!)} – ${formatShortDate(a.toDate)}`
+                            : "Vacaciones"}
+                        </p>
                       </div>
                       <Button
                         variant="ghost"
@@ -811,6 +868,7 @@ export function DayDetailPanel({
         onClose={() => setVacationDialogOpen(false)}
         date={date}
         guardSchedules={guardSchedules}
+        allCalendarAssignments={assignments}
         onAssign={onAddVacation}
       />
 

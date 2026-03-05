@@ -96,6 +96,8 @@ export interface DateGuardUnityAssignmentDto {
   dayOfWeek?: DayOfWeek
   numDay?: number
   date?: string
+  /** End date for vacation ranges; null/undefined = single-day assignment */
+  toDate?: string
   scheduleAssignmentType: ScheduleAssignmentType
   hasVacation: boolean
   hasExceptions: boolean
@@ -134,10 +136,12 @@ export interface CreateBulkFreeDayRequest {
   dates: string[]
 }
 
-export interface CreateBulkVacationRequest {
-    guardUnityScheduleAssignmentId: number
-    dateFrom: string
-    dateTo: string
+export interface CreateVacationAssignmentRequest {
+  guardUnityScheduleAssignmentId: number
+  /** Start date (always required) */
+  date: string
+  /** End date for range vacations; omit or null for single-day */
+  toDate?: string | null
 }
 
 // ─── Calendar Helper Types ────────────────────────────────────────────────────
@@ -226,7 +230,13 @@ export function getDayStats(
   date: string,
   allAssignments: DateGuardUnityAssignmentDto[],
 ): CalendarDayStats {
-  const assignments = allAssignments.filter(a => a.date === date || a.dayOfMonth?.date === date)
+  const assignments = allAssignments.filter(
+    a =>
+      a.date === date ||
+      a.dayOfMonth?.date === date ||
+      // Range vacation: covers this date
+      (a.toDate != null && a.date != null && a.date <= date && a.toDate >= date),
+  )
 
   const normalCount = assignments.filter(
     a => a.scheduleAssignmentType === ScheduleAssignmentType.NORMAL ||

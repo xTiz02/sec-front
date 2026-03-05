@@ -19,7 +19,7 @@ import {
   useCreateGuardMonthlyAssignmentMutation,
   useDeleteGuardMonthlyAssignmentMutation,
   useCreateBulkFreeDayAssignmentsMutation,
-  useCreateBulkVacationAssignmentsMutation,
+  useCreateVacationAssignmentMutation,
   useRemoveVacationAssignmentMutation,
 } from "./api/monthlySchedulerApi";
 import { useGetContractSchedulesByContractIdQuery } from "@/features/contractSchedule/api/contractScheduleApi";
@@ -97,8 +97,7 @@ export function MonthlySchedulerPage() {
     useDeleteGuardMonthlyAssignmentMutation();
   const [createBulkFreeDayAssignments] =
     useCreateBulkFreeDayAssignmentsMutation();
-  const [createBulkVacationAssignments] =
-    useCreateBulkVacationAssignmentsMutation();
+  const [createVacationAssignment] = useCreateVacationAssignmentMutation();
   const [removeVacationAssignment] = useRemoveVacationAssignmentMutation();
 
   // ── Derived state ─────────────────────────────────────────────────────────
@@ -108,7 +107,14 @@ export function MonthlySchedulerPage() {
   const selectedDayAssignments = useMemo(() => {
     if (!selectedDate) return [];
     return calendarAssignments.filter(
-      (a) => a.date === selectedDate || a.dayOfMonth?.date === selectedDate,
+      (a) =>
+        a.date === selectedDate ||
+        a.dayOfMonth?.date === selectedDate ||
+        // Range vacation covering the selected date
+        (a.toDate != null &&
+          a.date != null &&
+          a.date <= selectedDate &&
+          a.toDate >= selectedDate),
     );
   }, [selectedDate, calendarAssignments]);
 
@@ -387,10 +393,10 @@ export function MonthlySchedulerPage() {
         gsId = newGs.id;
       }
 
-      await createBulkVacationAssignments({
+      await createVacationAssignment({
         guardUnityScheduleAssignmentId: gsId,
-        dateFrom,
-        dateTo,
+        date: dateFrom,
+        toDate: dateTo !== dateFrom ? dateTo : null,
       }).unwrap();
     },
     [
@@ -399,15 +405,15 @@ export function MonthlySchedulerPage() {
       guardSchedules,
       updateGuardUnitySchedule,
       createGuardMonthlyAssignment,
-      createBulkVacationAssignments,
+      createVacationAssignment,
     ],
   );
 
   const handleRemoveVacation = useCallback(
     async (assignmentId: number) => {
-      await removeDailyAssignment(assignmentId).unwrap();
+      await removeVacationAssignment(assignmentId).unwrap();
     },
-    [removeDailyAssignment],
+    [removeVacationAssignment],
   );
 
   const isLoadingMain = isLoadingGuardSchedules || isLoadingCalendar;
