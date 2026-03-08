@@ -1,0 +1,197 @@
+import { useNavigate, useParams } from "react-router-dom"
+import { useGetExternalGuardByIdQuery } from "./api/externalGuardApi"
+import {
+  GenderLabel,
+  IdentificationTypeLabel,
+  CountryLabel,
+} from "./api/externalGuardModel"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  ArrowLeft,
+  Loader2,
+  UserRound,
+  Mail,
+  Phone,
+  FileText,
+  Building2,
+  Globe,
+  Pencil,
+  CalendarDays,
+} from "lucide-react"
+
+// ─── Helper ────────────────────────────────────────────────────────────────────
+
+function DetailRow({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-medium">{value ?? "—"}</p>
+    </div>
+  )
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export const ExternalGuardDetailPage = () => {
+  const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const guardId = Number(id)
+
+  const { data: guard, isLoading } = useGetExternalGuardByIdQuery(guardId)
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!guard) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center gap-3">
+        <p className="text-muted-foreground">Guardia externo no encontrado</p>
+        <Button
+          variant="outline"
+          onClick={() => navigate("/modules/personal/external-guards")}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Volver
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/modules/personal/external-guards")}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <UserRound className="h-6 w-6 text-muted-foreground" />
+            <h1 className="text-2xl font-bold">
+              {guard.firstName} {guard.lastName}
+            </h1>
+            {guard.active ? (
+              <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20">
+                Activo
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-muted-foreground">
+                Inactivo
+              </Badge>
+            )}
+          </div>
+          {guard.businessName && (
+            <p className="mt-1 text-sm text-muted-foreground">{guard.businessName}</p>
+          )}
+        </div>
+        <Button
+          variant="outline"
+          onClick={() =>
+            navigate(`/modules/personal/external-guards/${guard.id}/edit`)
+          }
+        >
+          <Pencil className="mr-2 h-4 w-4" />
+          Editar
+        </Button>
+      </div>
+
+      {/* Cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Datos personales */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <UserRound className="h-4 w-4" />
+              Datos Personales
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <DetailRow label="Nombre Completo" value={`${guard.firstName} ${guard.lastName}`} />
+            <DetailRow
+              label="Género"
+              value={guard.gender ? GenderLabel[guard.gender] : undefined}
+            />
+            <DetailRow label="Fecha de Nacimiento" value={guard.birthDate} />
+          </CardContent>
+        </Card>
+
+        {/* Contacto */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              Contacto
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <DetailRow label="Email" value={guard.email} />
+            <DetailRow label="Teléfono Móvil" value={guard.mobilePhone} />
+          </CardContent>
+        </Card>
+
+        {/* Identificación */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Identificación
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <DetailRow
+              label="Tipo de Documento"
+              value={
+                guard.identificationType
+                  ? IdentificationTypeLabel[guard.identificationType]
+                  : undefined
+              }
+            />
+            <DetailRow label="Número de Documento" value={guard.documentNumber} />
+            <DetailRow
+              label="País"
+              value={guard.country ? CountryLabel[guard.country] : undefined}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Empresa */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Empresa
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <DetailRow label="Razón Social / Empresa" value={guard.businessName} />
+          </CardContent>
+        </Card>
+
+        {/* Sistema */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Registro
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <DetailRow label="Creado" value={guard.createdAt?.split("T")[0]} />
+            <DetailRow label="Última Actualización" value={guard.updatedAt?.split("T")[0]} />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

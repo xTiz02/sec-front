@@ -23,6 +23,7 @@ import {
   ClipboardList,
   UserCheck,
   FileBarChart2,
+  Star,
 } from "lucide-react"
 
 
@@ -47,7 +48,7 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
       { label: "Empleados", path: "/modules/personal/employees" },
       { label: "Guardias", path: "/modules/personal/guards" },
-      { label: "Guardias Privados", path: "/modules/personal/private-guards" },
+      { label: "Guardias Externos", path: "/modules/personal/external-guards" },
     ],
   },
   {
@@ -66,7 +67,15 @@ export const NAV_ITEMS: NavItem[] = [
       { label: "Contratos de Unidad", path: "/modules/scheduling/contracts" },
       { label: "Configurar Plantilla Semanal", path: "/modules/scheduling/weekly-builder" },
       { label: "Planificador Mensual", path: "/modules/scheduling/monthly-scheduler" },
+      { label: "Excepciones Diarias", path: "/modules/scheduling/exceptions" },
       { label: "Asignaciones", path: "/modules/scheduling/assignments" },
+    ],
+  },
+  {
+    label: "Servicios Especiales",
+    icon: <Star size={18} />,
+    children: [
+      { label: "Unidades / Establecimientos", path: "/modules/special-services/unities" },
     ],
   },
   {

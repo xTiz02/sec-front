@@ -27,6 +27,12 @@ import { ExceptionManagementPage } from "@/features/scheduling/ExceptionManageme
 import { GuardPage } from "@/features/guard/GuardPage";
 import { GuardFormPage } from "@/features/guard/GuardFormPage";
 import { GuardDetailPage } from "@/features/guard/GuardDetailPage";
+import { ExternalGuardPage } from "@/features/externalGuard/ExternalGuardPage";
+import { ExternalGuardDetailPage } from "@/features/externalGuard/ExternalGuardDetailPage";
+import { ExternalGuardFormPage } from "@/features/externalGuard/ExternalGuardFormPage";
+import { SpecialServiceUnityPage } from "@/features/specialService/SpecialServiceUnityPage";
+import { SpecialServiceUnityDetailPage } from "@/features/specialService/SpecialServiceUnityDetailPage";
+import { SpecialServiceUnityFormPage } from "@/features/specialService/SpecialServiceUnityFormPage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -56,6 +62,10 @@ export const AppRoutes = () => (
           <Route path="guards/new" element={<GuardFormPage />} />
           <Route path="guards/:id" element={<GuardDetailPage />} />
           <Route path="guards/:id/edit" element={<GuardFormPage />} />
+          <Route path="external-guards" element={<ExternalGuardPage />} />
+          <Route path="external-guards/new" element={<ExternalGuardFormPage />} />
+          <Route path="external-guards/:id" element={<ExternalGuardDetailPage />} />
+          <Route path="external-guards/:id/edit" element={<ExternalGuardFormPage />} />
         </Route>
 
         {/* Clients & Unities */}
@@ -79,6 +89,14 @@ export const AppRoutes = () => (
           <Route path="assignments/new" element={<AssignmentFormPage />} />
           <Route path="assignments/:id" element={<AssignmentDetailPage />} />
           <Route path="assignments/:id/edit" element={<AssignmentFormPage />} />
+        </Route>
+
+        {/* Special Services */}
+        <Route path="special-services">
+          <Route path="unities" element={<SpecialServiceUnityPage />} />
+          <Route path="unities/new" element={<SpecialServiceUnityFormPage />} />
+          <Route path="unities/:id" element={<SpecialServiceUnityDetailPage />} />
+          <Route path="unities/:id/edit" element={<SpecialServiceUnityFormPage />} />
         </Route>
 
         {/* Security */}

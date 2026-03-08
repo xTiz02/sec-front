@@ -40,6 +40,7 @@ import {
 } from "./api/scheduleExceptionApi"
 import type { DateGuardUnityAssignmentDto, GuardUnityScheduleAssignmentDto } from "./api/monthlySchedulerModel"
 import { INDEX_TO_MONTH } from "./api/monthlySchedulerModel"
+import { Month } from "@/features/assignment/api/assignmentModel"
 import type { ScheduleExceptionDto } from "./api/scheduleExceptionModel"
 import {
   ScheduleExceptionType,
@@ -260,24 +261,24 @@ export function ExceptionManagementPage() {
   // ── API Queries ───────────────────────────────────────────────────────────
   const { data: scheduleMonthly, isLoading: isLoadingSchedule } =
     useGetScheduleMonthlyByPeriodQuery(
-      { month: month!, year: year! },
+      { month: month ?? Month.JANUARY, year: year ?? 0 },
       { skip: !month || !year },
     )
 
   const { data: calendarAssignments = [], isLoading: isLoadingAssignments } =
     useGetCalendarAssignmentsQuery(
-      { contractUnityId: contractUnityId!, scheduleMonthlyId: scheduleMonthly!.id },
+      { contractUnityId: contractUnityId ?? 0, scheduleMonthlyId: scheduleMonthly?.id ?? 0 },
       { skip: !contractUnityId || !scheduleMonthly },
     )
 
   const { data: guardPool = [], isLoading: isLoadingPool } =
     useGetGuardUnityScheduleAssignmentsQuery(
-      { contractUnityId: contractUnityId!, scheduleMonthlyId: scheduleMonthly!.id },
+      { contractUnityId: contractUnityId ?? 0, scheduleMonthlyId: scheduleMonthly?.id ?? 0 },
       { skip: !contractUnityId || !scheduleMonthly },
     )
 
   const { data: contractSchedules = [] } = useGetContractSchedulesByContractIdQuery(
-    contractUnityId!,
+    contractUnityId ?? 0,
     { skip: !contractUnityId },
   )
 
