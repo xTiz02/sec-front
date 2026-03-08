@@ -76,6 +76,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: <Star size={18} />,
     children: [
       { label: "Unidades / Establecimientos", path: "/modules/special-services/unities" },
+      { label: "Horarios", path: "/modules/special-services/schedules" },
     ],
   },
   {

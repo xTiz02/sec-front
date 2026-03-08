@@ -33,6 +33,9 @@ import { ExternalGuardFormPage } from "@/features/externalGuard/ExternalGuardFor
 import { SpecialServiceUnityPage } from "@/features/specialService/SpecialServiceUnityPage";
 import { SpecialServiceUnityDetailPage } from "@/features/specialService/SpecialServiceUnityDetailPage";
 import { SpecialServiceUnityFormPage } from "@/features/specialService/SpecialServiceUnityFormPage";
+import { SpecialServiceSchedulePage } from "@/features/specialService/SpecialServiceSchedulePage";
+import { SpecialServiceScheduleFormPage } from "@/features/specialService/SpecialServiceScheduleFormPage";
+import { SpecialServiceScheduleDetailPage } from "@/features/specialService/SpecialServiceScheduleDetailPage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -97,6 +100,9 @@ export const AppRoutes = () => (
           <Route path="unities/new" element={<SpecialServiceUnityFormPage />} />
           <Route path="unities/:id" element={<SpecialServiceUnityDetailPage />} />
           <Route path="unities/:id/edit" element={<SpecialServiceUnityFormPage />} />
+          <Route path="schedules" element={<SpecialServiceSchedulePage />} />
+          <Route path="schedules/new" element={<SpecialServiceScheduleFormPage />} />
+          <Route path="schedules/:id" element={<SpecialServiceScheduleDetailPage />} />
         </Route>
 
         {/* Security */}
