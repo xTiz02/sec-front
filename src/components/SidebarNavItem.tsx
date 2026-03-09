@@ -77,6 +77,7 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
       { label: "Unidades / Establecimientos", path: "/modules/special-services/unities" },
       { label: "Horarios", path: "/modules/special-services/schedules" },
+      { label: "Excepciones", path: "/modules/special-services/exceptions" },
     ],
   },
   {

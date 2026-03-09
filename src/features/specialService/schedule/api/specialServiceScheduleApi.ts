@@ -7,7 +7,9 @@ import type {
   SpecialServiceDayAssignmentDto,
   CreateSpecialServiceScheduleRequest,
   AddSpecialServiceAssignmentRequest,
+  CreateSpecialServiceExceptionRequest,
 } from "./specialServiceScheduleModel"
+import type { ScheduleExceptionDto } from "@/features/scheduling/api/scheduleExceptionModel"
 
 export const specialServiceScheduleApi = baseApi.injectEndpoints({
   endpoints: builder => ({
@@ -77,6 +79,18 @@ export const specialServiceScheduleApi = baseApi.injectEndpoints({
         { type: "SpecialServiceSchedule", id: scheduleId },
       ],
     }),
+
+    /** Create an exception for a special service day assignment (backend creates GuardAssignment) */
+    createSpecialServiceException: builder.mutation<
+      ScheduleExceptionDto,
+      CreateSpecialServiceExceptionRequest
+    >({
+      query: body => ({ url: `/schedule-exception/special-service`, method: "POST", body }),
+      invalidatesTags: [
+        { type: "ScheduleException", id: "LIST" },
+        { type: "SpecialServiceSchedule", id: "LIST" },
+      ],
+    }),
   }),
   overrideExisting: false,
 })
@@ -88,4 +102,5 @@ export const {
   useDeleteSpecialServiceScheduleMutation,
   useAddSpecialServiceAssignmentMutation,
   useRemoveSpecialServiceAssignmentMutation,
+  useCreateSpecialServiceExceptionMutation,
 } = specialServiceScheduleApi

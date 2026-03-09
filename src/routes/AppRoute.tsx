@@ -30,12 +30,13 @@ import { GuardDetailPage } from "@/features/guard/GuardDetailPage";
 import { ExternalGuardPage } from "@/features/externalGuard/ExternalGuardPage";
 import { ExternalGuardDetailPage } from "@/features/externalGuard/ExternalGuardDetailPage";
 import { ExternalGuardFormPage } from "@/features/externalGuard/ExternalGuardFormPage";
-import { SpecialServiceUnityPage } from "@/features/specialService/SpecialServiceUnityPage";
-import { SpecialServiceUnityDetailPage } from "@/features/specialService/SpecialServiceUnityDetailPage";
-import { SpecialServiceUnityFormPage } from "@/features/specialService/SpecialServiceUnityFormPage";
-import { SpecialServiceSchedulePage } from "@/features/specialService/SpecialServiceSchedulePage";
-import { SpecialServiceScheduleFormPage } from "@/features/specialService/SpecialServiceScheduleFormPage";
-import { SpecialServiceScheduleDetailPage } from "@/features/specialService/SpecialServiceScheduleDetailPage";
+import { SpecialServiceUnityPage } from "@/features/specialService/unity/SpecialServiceUnityPage";
+import { SpecialServiceUnityDetailPage } from "@/features/specialService/unity/SpecialServiceUnityDetailPage";
+import { SpecialServiceUnityFormPage } from "@/features/specialService/unity/SpecialServiceUnityFormPage";
+import { SpecialServiceSchedulePage } from "@/features/specialService/schedule/SpecialServiceSchedulePage";
+import { SpecialServiceScheduleFormPage } from "@/features/specialService/schedule/SpecialServiceScheduleFormPage";
+import { SpecialServiceScheduleDetailPage } from "@/features/specialService/schedule/SpecialServiceScheduleDetailPage";
+import { SpecialServiceExceptionPage } from "@/features/specialService/schedule/SpecialServiceExceptionPage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -103,6 +104,7 @@ export const AppRoutes = () => (
           <Route path="schedules" element={<SpecialServiceSchedulePage />} />
           <Route path="schedules/new" element={<SpecialServiceScheduleFormPage />} />
           <Route path="schedules/:id" element={<SpecialServiceScheduleDetailPage />} />
+          <Route path="exceptions" element={<SpecialServiceExceptionPage />} />
         </Route>
 
         {/* Security */}

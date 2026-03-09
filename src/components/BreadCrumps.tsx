@@ -28,6 +28,15 @@ const Breadcrumb: React.FC = () => {
     users: "Usuarios",
     profiles: "Perfiles",
     settings: "Configuración",
+    "special-services": "Servicios Especiales",
+    unities: "Unidades",
+    schedules: "Horarios",
+    exceptions: "Excepciones",
+    "external-guards": "Guardias Externos",
+    "turn-templates": "Plantillas de Turno",
+    contracts: "Contratos",
+    "weekly-builder": "Constructor Semanal",
+    "monthly-scheduler": "Planificador Mensual",
   }
 
   return (

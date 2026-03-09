@@ -1,6 +1,6 @@
 import type { GuardDto } from "@/features/guard/api/guardModel"
 import type { TurnTemplateDto } from "@/features/contractSchedule/api/contractScheduleModel"
-import type { SpecialServiceUnityDto } from "./specialServiceUnityModel"
+import type { SpecialServiceUnityDto } from "../unity/api/specialServiceUnityModel"
 import type { ExternalGuardDto } from "@/features/externalGuard/api/externalGuardModel"
 
 // Re-export enums needed in pages
@@ -86,3 +86,19 @@ export interface CreateSpecialServiceScheduleRequest {
 }
 
 export type AddSpecialServiceAssignmentRequest = CreateSpecialServiceAssignmentRequest
+
+// ─── Exception Request ──────────────────────────────────────────────────────
+
+export interface CreateSpecialServiceExceptionRequest {
+  /** The absent guard's DateGuardUnityAssignment id */
+  dateGuardUnityAssignmentId: number
+  /** Internal guard id for replacement — mutually exclusive with externalGuardId */
+  guardId?: number | null
+  /** External guard id for replacement — mutually exclusive with guardId */
+  externalGuardId?: number | null
+  guardType: string
+  scheduleExceptionType: string
+  motive?: string
+  scheduleId: number
+  description?: string
+}
