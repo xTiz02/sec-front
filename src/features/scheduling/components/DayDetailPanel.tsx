@@ -26,6 +26,7 @@ import {
 import { TurnType, DayOfWeek, DayOfWeekLabel } from "@/features/contractSchedule/api/contractScheduleModel"
 import { GuardType, GuardTypeLabel } from "@/features/guard/api/guardModel"
 import type { GuardDto } from "@/features/guard/api/guardModel"
+import type { GuardSelection } from "@/components/custom/GuardPickerDialog"
 import {
   Select,
   SelectContent,
@@ -149,6 +150,9 @@ function AssignFreeDayDialog({
         <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
           {guardSchedules.map(gs => {
             const emp = gs.guardAssignment?.guard?.employee
+            const extGuard = gs.guardAssignment?.externalGuard
+            const displayFirst = emp?.firstName ?? extGuard?.firstName ?? "Guardia"
+            const displayLast = emp?.lastName ?? extGuard?.lastName ?? ""
             const guardId = gs.guardAssignment?.guardId ?? -1
             const isAlreadyFree = alreadyFreeTodayGuardIds.has(guardId)
             const isAssigning = assigning === gs.id
@@ -165,12 +169,12 @@ function AssignFreeDayDialog({
                   <Avatar className="size-8 shrink-0">
                     <AvatarImage src={gs.guardAssignment?.guard?.photoUrl} />
                     <AvatarFallback className="text-xs font-bold">
-                      {initials(emp?.firstName, emp?.lastName)}
+                      {initials(displayFirst, displayLast)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-foreground truncate">
-                      {emp?.firstName ?? "Guardia"} {emp?.lastName ?? ""}
+                      {displayFirst} {displayLast}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
                       {GuardTypeLabel[gs.guardType]}
@@ -328,6 +332,9 @@ function AssignVacationDialog({
         <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
           {guardSchedules.map(gs => {
             const emp = gs.guardAssignment?.guard?.employee
+            const extGuard = gs.guardAssignment?.externalGuard
+            const displayFirst = emp?.firstName ?? extGuard?.firstName ?? "Guardia"
+            const displayLast = emp?.lastName ?? extGuard?.lastName ?? ""
             const conflict = conflictMap.get(gs.id)
             const isAssigning = assigning === gs.id
             const blocked = !!conflict
@@ -344,12 +351,12 @@ function AssignVacationDialog({
                   <Avatar className="size-8 shrink-0">
                     <AvatarImage src={gs.guardAssignment?.guard?.photoUrl} />
                     <AvatarFallback className="text-xs font-bold">
-                      {initials(emp?.firstName, emp?.lastName)}
+                      {initials(displayFirst, displayLast)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-foreground truncate">
-                      {emp?.firstName ?? "Guardia"} {emp?.lastName ?? ""}
+                      {displayFirst} {displayLast}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
                       {conflict ?? GuardTypeLabel[gs.guardType]}
@@ -389,15 +396,14 @@ interface DayDetailPanelProps {
   contractSchedules: ContractScheduleUnitTemplateDto[]
   onClose: () => void
   onUpdateGuardType: (scheduleAssignmentId: number, guardType: GuardType) => Promise<void>
-  /** guard = full GuardDto so parent can auto-create monthly pool entry if needed */
-  onAddAssignment: (guard: GuardDto, turnType: TurnType, guardType: GuardType) => Promise<void>
+  onAddAssignment: (selection: GuardSelection, turnType: TurnType) => Promise<void>
   onRemoveAssignment: (assignmentId: number) => Promise<void>
   /** Remove guard from monthly pool entirely (cascades daily assignments) */
   onRemoveFromMonthlyPool: (gsId: number) => Promise<void>
   /** Assign FREE_DAY; allWeekday=true → create for every occurrence of this weekday in the month */
   onAddFreeDay: (guard: GuardDto, guardType: GuardType, allWeekday: boolean) => Promise<void>
   /** All calendar assignments for the month — used for vacation conflict detection */
-  allCalendarAssignments: DateGuardUnityAssignmentDto[]
+  allCalendarAssignments?: DateGuardUnityAssignmentDto[]
   /** Assign VACATIONAL — single day (dateFrom===dateTo) or date range */
   onAddVacation: (guard: GuardDto, guardType: GuardType, dateFrom: string, dateTo: string) => Promise<void>
   /** Remove a vacation (VACATIONAL) daily assignment */
@@ -417,6 +423,7 @@ export function DayDetailPanel({
   onRemoveAssignment,
   onRemoveFromMonthlyPool,
   onAddFreeDay,
+  allCalendarAssignments,
   onAddVacation,
   onRemoveVacation,
 }: DayDetailPanelProps) {
@@ -430,11 +437,11 @@ export function DayDetailPanel({
 
   // ── Shift wrappers ────────────────────────────────────────────────────────
   const handleAddDay = useCallback(
-    (guard: GuardDto, type: GuardType) => onAddAssignment(guard, TurnType.DAY, type),
+    (selection: GuardSelection) => onAddAssignment(selection, TurnType.DAY),
     [onAddAssignment],
   )
   const handleAddNight = useCallback(
-    (guard: GuardDto, type: GuardType) => onAddAssignment(guard, TurnType.NIGHT, type),
+    (selection: GuardSelection) => onAddAssignment(selection, TurnType.NIGHT),
     [onAddAssignment],
   )
 
@@ -639,6 +646,9 @@ export function DayDetailPanel({
                 vacationAssignments.map(a => {
                   const gs = guardSchedules.find(g => g.id === a.guardUnityScheduleAssignmentId)
                   const emp = gs?.guardAssignment?.guard?.employee
+                  const extGuard = gs?.guardAssignment?.externalGuard
+                  const displayFirst = emp?.firstName ?? extGuard?.firstName ?? "?"
+                  const displayLast = emp?.lastName ?? extGuard?.lastName ?? ""
                   return (
                     <div
                       key={a.id}
@@ -647,12 +657,12 @@ export function DayDetailPanel({
                       <Avatar className="size-8 shrink-0">
                         <AvatarImage src={gs?.guardAssignment?.guard?.photoUrl} />
                         <AvatarFallback className="text-xs font-bold">
-                          {initials(emp?.firstName, emp?.lastName)}
+                          {initials(displayFirst, displayLast)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-foreground truncate">
-                          {emp?.firstName ?? "?"} {emp?.lastName ?? ""}
+                          {displayFirst} {displayLast}
                         </p>
                         <p className="text-[10px] text-muted-foreground mt-0.5">
                           {a.toDate && a.toDate !== a.date
@@ -765,6 +775,9 @@ export function DayDetailPanel({
             {guardSchedules.map(gs => {
               const emp = gs.guardAssignment?.guard?.employee
               const guard = gs.guardAssignment?.guard
+              const extGuard = gs.guardAssignment?.externalGuard
+              const displayFirst = emp?.firstName ?? extGuard?.firstName ?? "Guardia"
+              const displayLast = emp?.lastName ?? extGuard?.lastName ?? ""
               const dayAssign = assignments.find(
                 a => a.guardUnityScheduleAssignmentId === gs.id &&
                      a.scheduleAssignmentType !== ScheduleAssignmentType.FREE_DAY &&
@@ -796,12 +809,12 @@ export function DayDetailPanel({
                     <Avatar className="size-8 shrink-0">
                       <AvatarImage src={guard?.photoUrl} />
                       <AvatarFallback className="text-xs font-bold">
-                        {initials(emp?.firstName, emp?.lastName)}
+                        {initials(displayFirst, displayLast)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-foreground truncate">
-                        {emp?.firstName ?? "Guardia"} {emp?.lastName ?? ""}
+                        {displayFirst} {displayLast}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
                         {isOnVacation
@@ -868,7 +881,7 @@ export function DayDetailPanel({
         onClose={() => setVacationDialogOpen(false)}
         date={date}
         guardSchedules={guardSchedules}
-        allCalendarAssignments={assignments}
+        allCalendarAssignments={allCalendarAssignments ?? assignments}
         onAssign={onAddVacation}
       />
 
@@ -894,8 +907,10 @@ export function DayDetailPanel({
             <AlertDialogDescription>
               Se eliminará a{" "}
               <strong>
-                {confirmRemoveGs?.guardAssignment?.guard?.employee?.firstName}{" "}
-                {confirmRemoveGs?.guardAssignment?.guard?.employee?.lastName}
+                {confirmRemoveGs?.guardAssignment?.guard?.employee?.firstName
+                  ?? confirmRemoveGs?.guardAssignment?.externalGuard?.firstName}{" "}
+                {confirmRemoveGs?.guardAssignment?.guard?.employee?.lastName
+                  ?? confirmRemoveGs?.guardAssignment?.externalGuard?.lastName}
               </strong>{" "}
               del horario de este mes y todas sus asignaciones diarias serán eliminadas.
               Esta acción no se puede deshacer.

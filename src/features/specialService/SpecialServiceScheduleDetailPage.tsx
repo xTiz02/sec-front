@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
@@ -37,8 +36,8 @@ function formatDateBadge(dateStr: string): { month: string; day: string } {
 function guardDisplayName(a: SpecialServiceDayAssignmentDto): string {
   const gusa = a.guardUnityScheduleAssignment
   if (!gusa) return "—"
-  if (gusa.externalGuard) {
-    const eg = gusa.externalGuard
+  if (gusa.guardAssignment?.externalGuard) {
+    const eg = gusa.guardAssignment.externalGuard
     return `${eg.firstName} ${eg.lastName}`.trim() || `Guardia Ext. #${eg.id}`
   }
   if (gusa.guardAssignment?.guard?.employee) {
@@ -49,7 +48,7 @@ function guardDisplayName(a: SpecialServiceDayAssignmentDto): string {
 }
 
 function isExternal(a: SpecialServiceDayAssignmentDto): boolean {
-  return !!a.guardUnityScheduleAssignment?.externalGuard
+  return !!a.guardUnityScheduleAssignment?.guardAssignment?.externalGuard
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -62,7 +61,7 @@ export const SpecialServiceScheduleDetailPage = () => {
   const { data: schedule, isLoading } = useGetSpecialServiceScheduleByIdQuery(scheduleId)
 
   // Group assignments by date, sorted chronologically
-  const dayGroups = useMemo(() => {
+  const dayGroups = (() => {
     if (!schedule) return []
     const map = new Map<string, SpecialServiceDayAssignmentDto[]>()
     for (const a of schedule.dayAssignments) {
@@ -70,14 +69,13 @@ export const SpecialServiceScheduleDetailPage = () => {
       map.set(a.date, [...list, a])
     }
     return [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
-  }, [schedule])
+  })()
 
-  const dateRange = useMemo(() => {
-    if (dayGroups.length === 0) return null
-    const first = dayGroups[0][0]
-    const last = dayGroups[dayGroups.length - 1][0]
-    return first === last ? first : `${first} → ${last}`
-  }, [dayGroups])
+  const dateRange = (() => {
+    if (!schedule?.dateFrom) return null
+    if (!schedule.dateTo || schedule.dateTo === schedule.dateFrom) return schedule.dateFrom
+    return `${schedule.dateFrom} → ${schedule.dateTo}`
+  })()
 
   if (isLoading) {
     return (
@@ -133,8 +131,8 @@ export const SpecialServiceScheduleDetailPage = () => {
           </div>
         </div>
         <div className="text-right text-sm text-muted-foreground">
-          <p>{dayGroups.length} día{dayGroups.length !== 1 ? "s" : ""}</p>
-          <p>{schedule.dayAssignments.length} asignación{schedule.dayAssignments.length !== 1 ? "es" : ""}</p>
+          <p>{schedule.totalDays ?? dayGroups.length} día{(schedule.totalDays ?? dayGroups.length) !== 1 ? "s" : ""}</p>
+          <p>{schedule.totalAssignments ?? schedule.dayAssignments.length} asignación{(schedule.totalAssignments ?? schedule.dayAssignments.length) !== 1 ? "es" : ""}</p>
         </div>
       </div>
 

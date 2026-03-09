@@ -1,14 +1,14 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { format, addDays, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { useCreateSpecialServiceScheduleMutation } from "./api/specialServiceScheduleApi"
 import { useGetSpecialServiceUnitiesQuery } from "./api/specialServiceUnityApi"
-import { useGetGuardsQuery } from "@/features/guard/api/guardApi"
-import { useGetExternalGuardsQuery } from "@/features/externalGuard/api/externalGuardApi"
 import { GuardType, GuardTypeLabel } from "@/features/guard/api/guardModel"
 import { TurnType, TurnTypeLabel } from "@/features/contractSchedule/api/contractScheduleModel"
 import type { CreateSpecialServiceAssignmentRequest } from "./api/specialServiceScheduleModel"
+import { GuardPickerDialog } from "@/components/custom/GuardPickerDialog"
+import type { GuardSelection } from "@/components/custom/GuardPickerDialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +29,7 @@ type GuardRow = {
   _key: string
   /** "G:{id}" for internal guard, "E:{id}" for external guard */
   encodedGuard: string
+  guardLabel: string
   guardType: GuardType
   timeFrom: string
   timeTo: string
@@ -47,6 +48,7 @@ function newGuardRow(): GuardRow {
   return {
     _key: Math.random().toString(36).slice(2),
     encodedGuard: "",
+    guardLabel: "",
     guardType: GuardType.HOLDER,
     timeFrom: "08:00",
     timeTo: "20:00",
@@ -98,22 +100,20 @@ function formatDateBadge(dateStr: string): { month: string; day: string } {
 interface DayCardProps {
   day: DayEntry
   dayIdx: number
-  guardOptions: { value: string; label: string }[]
-  externalGuardOptions: { value: string; label: string }[]
   onToggle: () => void
   onRemoveDay: () => void
   onAddGuard: () => void
+  onPickGuard: (rowKey: string) => void
   onRemoveGuard: (key: string) => void
   onGuardChange: (key: string, field: keyof GuardRow, value: string) => void
 }
 
 function DayCard({
   day,
-  guardOptions,
-  externalGuardOptions,
   onToggle,
   onRemoveDay,
   onAddGuard,
+  onPickGuard,
   onRemoveGuard,
   onGuardChange,
 }: DayCardProps) {
@@ -202,29 +202,18 @@ function DayCard({
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {day.guards.map(row => (
                   <tr key={row._key}>
-                    {/* Guard selector */}
+                    {/* Guard picker button */}
                     <td className="py-3 pr-3">
-                      <select
-                        value={row.encodedGuard}
-                        onChange={e => onGuardChange(row._key, "encodedGuard", e.target.value)}
-                        className="w-full text-sm font-medium bg-transparent border-0 focus:ring-0 p-0 text-slate-900 dark:text-slate-100 cursor-pointer"
+                      <button
+                        type="button"
+                        onClick={() => onPickGuard(row._key)}
+                        className="flex items-center gap-2 text-sm font-medium text-left hover:text-primary transition-colors"
                       >
-                        <option value="">-- Seleccionar guardia --</option>
-                        {guardOptions.length > 0 && (
-                          <optgroup label="Guardias Internos">
-                            {guardOptions.map(g => (
-                              <option key={g.value} value={g.value}>{g.label}</option>
-                            ))}
-                          </optgroup>
-                        )}
-                        {externalGuardOptions.length > 0 && (
-                          <optgroup label="Guardias Externos">
-                            {externalGuardOptions.map(e => (
-                              <option key={e.value} value={e.value}>{e.label}</option>
-                            ))}
-                          </optgroup>
-                        )}
-                      </select>
+                        <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className={cn(row.encodedGuard ? "text-foreground" : "text-muted-foreground")}>
+                          {row.guardLabel || "Seleccionar guardia..."}
+                        </span>
+                      </button>
                     </td>
 
                     {/* Entry time */}
@@ -308,28 +297,7 @@ function DayCard({
 export const SpecialServiceScheduleFormPage = () => {
   const navigate = useNavigate()
 
-  // ── Selectors data ────────────────────────────────────────────────────────
   const { data: unitiesData } = useGetSpecialServiceUnitiesQuery({ page: 0, size: 200 })
-  const { data: guardsData } = useGetGuardsQuery({ page: 0, size: 200 })
-  const { data: extGuardsData } = useGetExternalGuardsQuery({ page: 0, size: 200 })
-
-  const guardOptions = useMemo(
-    () =>
-      (guardsData?.content ?? []).map(g => ({
-        value: `G:${g.id}`,
-        label: [g.employee?.firstName, g.employee?.lastName].filter(Boolean).join(" ") || `Guardia #${g.id}`,
-      })),
-    [guardsData],
-  )
-
-  const externalGuardOptions = useMemo(
-    () =>
-      (extGuardsData?.content ?? []).map(e => ({
-        value: `E:${e.id}`,
-        label: `${e.firstName} ${e.lastName}`.trim() || `Guardia Ext. #${e.id}`,
-      })),
-    [extGuardsData],
-  )
 
   // ── Form state ────────────────────────────────────────────────────────────
   const [unityId, setUnityId] = useState<string>("")
@@ -339,6 +307,9 @@ export const SpecialServiceScheduleFormPage = () => {
   const [manualDate, setManualDate] = useState("")
   const [showManualAdd, setShowManualAdd] = useState(false)
   const [formError, setFormError] = useState("")
+
+  /** Which guard row is currently being edited via the picker */
+  const [pickerTarget, setPickerTarget] = useState<{ dayIdx: number; rowKey: string } | null>(null)
 
   const [createSchedule, { isLoading: saving }] = useCreateSpecialServiceScheduleMutation()
 
@@ -386,11 +357,17 @@ export const SpecialServiceScheduleFormPage = () => {
   // ── Guard row management ──────────────────────────────────────────────────
 
   const handleAddGuard = (dayIdx: number) => {
+    const row = newGuardRow()
     setDays(prev =>
       prev.map((d, i) =>
-        i === dayIdx ? { ...d, expanded: true, guards: [...d.guards, newGuardRow()] } : d,
+        i === dayIdx ? { ...d, expanded: true, guards: [...d.guards, row] } : d,
       ),
     )
+    setPickerTarget({ dayIdx, rowKey: row._key })
+  }
+
+  const handlePickGuard = (dayIdx: number, rowKey: string) => {
+    setPickerTarget({ dayIdx, rowKey })
   }
 
   const handleRemoveGuard = (dayIdx: number, key: string) => {
@@ -412,6 +389,40 @@ export const SpecialServiceScheduleFormPage = () => {
           : d,
       ),
     )
+  }
+
+  const handleGuardSelected = async (selection: GuardSelection) => {
+    if (!pickerTarget) return
+    const { dayIdx, rowKey } = pickerTarget
+
+    let encodedGuard: string
+    let guardLabel: string
+    let guardType: GuardType
+
+    if (selection.kind === "GUARD") {
+      const emp = selection.guard.employee
+      encodedGuard = `G:${selection.guard.id}`
+      guardLabel = [emp?.firstName, emp?.lastName].filter(Boolean).join(" ") || `Guardia #${selection.guard.id}`
+      guardType = selection.guardType
+    } else {
+      encodedGuard = `E:${selection.externalGuard.id}`
+      guardLabel = `${selection.externalGuard.firstName} ${selection.externalGuard.lastName}`.trim() || `Ext. #${selection.externalGuard.id}`
+      guardType = selection.guardType
+    }
+
+    setDays(prev =>
+      prev.map((d, i) =>
+        i === dayIdx
+          ? {
+              ...d,
+              guards: d.guards.map(g =>
+                g._key === rowKey ? { ...g, encodedGuard, guardLabel, guardType } : g,
+              ),
+            }
+          : d,
+      ),
+    )
+    setPickerTarget(null)
   }
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -445,9 +456,16 @@ export const SpecialServiceScheduleFormPage = () => {
       }
     }
 
+    if (!dateFrom || !dateTo) {
+      setFormError("Debes ingresar las fechas de inicio y fin.")
+      return
+    }
+
     try {
       const result = await createSchedule({
         specialServiceUnityId: Number(unityId),
+        dateFrom,
+        dateTo,
         assignments,
       }).unwrap()
       navigate(`/modules/special-services/schedules/${result.id}`)
@@ -593,11 +611,10 @@ export const SpecialServiceScheduleFormPage = () => {
             key={day.date}
             day={day}
             dayIdx={dayIdx}
-            guardOptions={guardOptions}
-            externalGuardOptions={externalGuardOptions}
             onToggle={() => handleToggleDay(dayIdx)}
             onRemoveDay={() => handleRemoveDay(dayIdx)}
             onAddGuard={() => handleAddGuard(dayIdx)}
+            onPickGuard={rowKey => handlePickGuard(dayIdx, rowKey)}
             onRemoveGuard={key => handleRemoveGuard(dayIdx, key)}
             onGuardChange={(key, field, value) => handleGuardChange(dayIdx, key, field, value)}
           />
@@ -622,6 +639,15 @@ export const SpecialServiceScheduleFormPage = () => {
           Guardar Servicio Especial
         </Button>
       </div>
+
+      {/* Guard picker — shared across all day rows */}
+      <GuardPickerDialog
+        open={pickerTarget !== null}
+        onClose={() => setPickerTarget(null)}
+        title="Seleccionar Guardia"
+        allowExternal
+        onSelect={handleGuardSelected}
+      />
     </div>
   )
 }

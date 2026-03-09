@@ -8,6 +8,7 @@ import type {
 } from "@/features/contractSchedule/api/contractScheduleModel"
 import type { GuardDto } from "@/features/guard/api/guardModel"
 import type { ScheduleMonthlyDto } from "@/features/assignment/api/assignmentModel"
+import type { ExternalGuardDto } from "@/features/externalGuard/api/externalGuardModel"
 
 // ─── Re-export for convenience ────────────────────────────────────────────────
 export type { DayOfWeek, ContractScheduleUnitTemplateDto, ContractUnityDto }
@@ -63,8 +64,10 @@ export interface DayOfMonthDto {
 
 export interface GuardAssignmentDto {
   id: number
-  guardId: number
+  guardId?: number
   guard?: GuardDto
+  externalGuardId?: number
+  externalGuard?: ExternalGuardDto
   employeeUnitAssignmentId?: number
   active: boolean
   createdAt?: string
@@ -125,7 +128,8 @@ export interface CreateDailyAssignmentRequest {
 }
 
 export interface CreateGuardMonthlyAssignmentRequest {
-  guardId: number
+  guardId?: number
+  externalGuardId?: number
   contractUnityId: number
   scheduleMonthlyId: number
   guardType: GuardType

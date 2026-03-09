@@ -3,6 +3,7 @@ import { Month } from "@/features/assignment/api/assignmentModel";
 import { GuardType } from "@/features/guard/api/guardModel";
 import type { GuardDto } from "@/features/guard/api/guardModel";
 import { TurnType } from "@/features/contractSchedule/api/contractScheduleModel";
+import type { GuardSelection } from "@/components/custom/GuardPickerDialog";
 import {
   MONTH_INDEX,
   getDayStats,
@@ -212,32 +213,52 @@ export function MonthlySchedulerPage() {
   );
 
   const handleAddAssignment = useCallback(
-    async (guard: GuardDto, turnType: TurnType, guardType: GuardType) => {
+    async (selection: GuardSelection, turnType: TurnType) => {
       if (!selectedDate || !contractUnityId || !scheduleMonthlyId) return;
+
+      const guardType = selection.guardType;
 
       // Step 1: find or create the GuardUnityScheduleAssignment (monthly pool entry)
       let gsId: number;
-      const existingGs = guardSchedules.find(
-        (g) => g.guardAssignment?.guardId === guard.id,
-      );
-      if (existingGs) {
-        gsId = existingGs.id;
-        // Update monthly type if changed
-        if (guardType !== existingGs.guardType) {
-          await updateGuardUnitySchedule({
-            id: gsId,
-            body: { guardType },
+      if (selection.kind === "GUARD") {
+        const guard = selection.guard;
+        const existingGs = guardSchedules.find(
+          (g) => g.guardAssignment?.guardId === guard.id,
+        );
+        if (existingGs) {
+          gsId = existingGs.id;
+          if (guardType !== existingGs.guardType) {
+            await updateGuardUnitySchedule({ id: gsId, body: { guardType } }).unwrap();
+          }
+        } else {
+          const newGs = await createGuardMonthlyAssignment({
+            guardId: guard.id,
+            contractUnityId,
+            scheduleMonthlyId,
+            guardType,
           }).unwrap();
+          gsId = newGs.id;
         }
       } else {
-        // Guard not in monthly pool yet — create the entry
-        const newGs = await createGuardMonthlyAssignment({
-          guardId: guard.id,
-          contractUnityId,
-          scheduleMonthlyId,
-          guardType,
-        }).unwrap();
-        gsId = newGs.id;
+        // EXTERNAL guard
+        const eg = selection.externalGuard;
+        const existingGs = guardSchedules.find(
+          (g) => g.guardAssignment?.externalGuardId === eg.id,
+        );
+        if (existingGs) {
+          gsId = existingGs.id;
+          if (guardType !== existingGs.guardType) {
+            await updateGuardUnitySchedule({ id: gsId, body: { guardType } }).unwrap();
+          }
+        } else {
+          const newGs = await createGuardMonthlyAssignment({
+            externalGuardId: eg.id,
+            contractUnityId,
+            scheduleMonthlyId,
+            guardType,
+          }).unwrap();
+          gsId = newGs.id;
+        }
       }
 
       // Step 2: resolve TurnAndHour.id from contractSchedules for this day + turnType
@@ -251,9 +272,7 @@ export function MonthlySchedulerPage() {
         "SATURDAY",
       ];
       const dowStr = dowEnums[new Date(selectedDate + "T00:00:00").getDay()];
-      const dayTemplate = contractSchedules.find(
-        (cs) => cs.dayOfWeek === dowStr,
-      );
+      const dayTemplate = contractSchedules.find((cs) => cs.dayOfWeek === dowStr);
       const turnAndHourId =
         dayTemplate?.turnAndHours?.find(
           (t) => t.turnTemplate?.turnType === turnType,
@@ -504,6 +523,7 @@ export function MonthlySchedulerPage() {
           onRemoveAssignment={handleRemoveAssignment}
           onRemoveFromMonthlyPool={handleRemoveFromMonthlyPool}
           onAddFreeDay={handleAddFreeDay}
+          allCalendarAssignments={calendarAssignments}
           onAddVacation={handleAddVacation}
           onRemoveVacation={handleRemoveVacation}
         />

@@ -3,9 +3,8 @@ import { cn } from "@/lib/utils"
 import { TurnType } from "@/features/contractSchedule/api/contractScheduleModel"
 import type { TurnAndHourDto } from "@/features/contractSchedule/api/contractScheduleModel"
 import { GuardType, GuardTypeLabel } from "@/features/guard/api/guardModel"
-import type { GuardDto } from "@/features/guard/api/guardModel"
-import { useGetGuardsQuery } from "@/features/guard/api/guardApi"
 import type { DateGuardUnityAssignmentDto, GuardUnityScheduleAssignmentDto } from "../api/monthlySchedulerModel"
+import type { GuardSelection } from "@/components/custom/GuardPickerDialog"
 import {
   Select,
   SelectContent,
@@ -13,18 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { MoonStar, Sun, Bed, Plus, X, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { GuardPickerDialog } from "@/components/custom/GuardPickerDialog"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -46,178 +37,6 @@ function GuardTypeBadge({ type }: { type: GuardType }) {
   )
 }
 
-// ─── Add Guard Dialog ─────────────────────────────────────────────────────────
-// Searches all guards in the system. Marks those already in the monthly pool.
-// Disables guards already assigned to this specific shift on this day.
-
-interface AddGuardDialogProps {
-  open: boolean
-  onClose: () => void
-  title: string
-  /** Monthly pool: guards already assigned to this schedule month */
-  guardSchedules: GuardUnityScheduleAssignmentDto[]
-  /** Guard IDs already present in this specific shift today */
-  alreadyInShiftGuardIds: Set<number>
-  onAdd: (guard: GuardDto, type: GuardType) => Promise<void>
-}
-
-function AddGuardDialog({
-  open,
-  onClose,
-  title,
-  guardSchedules,
-  alreadyInShiftGuardIds,
-  onAdd,
-}: AddGuardDialogProps) {
-  const [search, setSearch] = useState("")
-  const [localTypes, setLocalTypes] = useState<Map<number, GuardType>>(new Map())
-  const [adding, setAdding] = useState<number | null>(null)
-
-  const { data: guardsPage, isFetching } = useGetGuardsQuery(
-    { size: 20, query: search || undefined, page: 0 },
-    { skip: !open },
-  )
-  const guards = guardsPage?.content ?? []
-
-  /** For a given guard, resolve their effective type:
-   *  1. User changed it in the dialog → localTypes
-   *  2. Already in monthly pool → use their monthly guardType
-   *  3. Fallback to base guardType from GuardDto
-   */
-  const resolveType = (guard: GuardDto): GuardType => {
-    if (localTypes.has(guard.id)) return localTypes.get(guard.id)!
-    const monthlyRecord = guardSchedules.find(gs => gs.guardAssignment?.guardId === guard.id)
-    return monthlyRecord?.guardType ?? guard.guardType
-  }
-
-  const handleAdd = async (guard: GuardDto) => {
-    setAdding(guard.id)
-    try {
-      await onAdd(guard, resolveType(guard))
-    } catch (err) {
-      console.error("Error adding guard:", err)
-    } finally {
-      setAdding(null)
-    }
-  }
-
-  const handleClose = () => {
-    setSearch("")
-    setLocalTypes(new Map())
-    onClose()
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={v => !v && handleClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            {title}
-          </DialogTitle>
-          <DialogDescription>
-            Busca cualquier guardia del sistema. Si no está en el mes, se agregará automáticamente.
-          </DialogDescription>
-        </DialogHeader>
-
-        <Input
-          placeholder="Buscar por nombre..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          autoFocus
-        />
-
-        <div className="max-h-80 overflow-y-auto space-y-2 mt-1 pr-1">
-          {isFetching && (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
-          )}
-
-          {!isFetching && guards.map(guard => {
-            const emp = guard.employee
-            const inShift = alreadyInShiftGuardIds.has(guard.id)
-            const inPool = guardSchedules.some(gs => gs.guardAssignment?.guardId === guard.id)
-            const currentType = resolveType(guard)
-            const isAdding = adding === guard.id
-
-            return (
-              <div
-                key={guard.id}
-                className={cn(
-                  "flex items-center justify-between p-3 border border-border rounded-lg bg-card transition-opacity",
-                  inShift && "opacity-50",
-                )}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="size-9 shrink-0">
-                    <AvatarFallback className="text-xs font-bold">
-                      {initials(emp?.firstName, emp?.lastName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-sm font-bold text-foreground truncate">
-                        {emp?.firstName ?? "Guardia"} {emp?.lastName ?? ""}
-                      </p>
-                      {inPool && (
-                        <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 shrink-0">
-                          En el mes
-                        </Badge>
-                      )}
-                      {inShift && (
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 shrink-0 text-muted-foreground">
-                          Ya en turno
-                        </Badge>
-                      )}
-                    </div>
-                    <Select
-                      value={currentType}
-                      disabled={inShift}
-                      onValueChange={val => {
-                        const map = new Map(localTypes)
-                        map.set(guard.id, val as GuardType)
-                        setLocalTypes(map)
-                      }}
-                    >
-                      <SelectTrigger className="h-5 w-28 text-[10px] mt-0.5 shadow-none focus:ring-0">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(GuardType).map(t => (
-                          <SelectItem key={t} value={t} className="text-xs">
-                            {GuardTypeLabel[t]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <Button
-                  size="sm"
-                  disabled={inShift || isAdding || adding !== null}
-                  onClick={() => handleAdd(guard)}
-                  className="shrink-0 ml-3"
-                >
-                  {isAdding ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                  {inShift ? "Asignado" : isAdding ? "Agregando..." : "Agregar"}
-                </Button>
-              </div>
-            )
-          })}
-
-          {!isFetching && guards.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-6">
-              {search ? "Sin resultados para la búsqueda" : "No hay guardias en el sistema"}
-            </p>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 // ─── Guard Card ───────────────────────────────────────────────────────────────
 
 interface GuardCardProps {
@@ -232,8 +51,9 @@ function GuardCard({ assignment, guardSchedule, faded = false, onUpdateGuardType
   const [removing, setRemoving] = useState(false)
   const guard = guardSchedule?.guardAssignment?.guard
   const emp = guard?.employee
-  const firstName = emp?.firstName ?? "Guardia"
-  const lastName = emp?.lastName ?? `#${guard?.id ?? "?"}`
+  const externalGuard = guardSchedule?.guardAssignment?.externalGuard
+  const firstName = emp?.firstName ?? externalGuard?.firstName ?? "Guardia"
+  const lastName = emp?.lastName ?? externalGuard?.lastName ?? `#${guard?.id ?? "?"}`
   const docNumber = emp?.documentNumber
 
   const handleRemove = async () => {
@@ -319,8 +139,7 @@ interface ShiftSectionProps {
   /** TurnAndHour records for this shift from contractSchedules — used to show time ranges */
   turnAndHours?: TurnAndHourDto[]
   onUpdateGuardType?: (scheduleAssignmentId: number, guardType: GuardType) => Promise<void>
-  /** Receives the full GuardDto so the parent can auto-create a monthly pool entry if needed */
-  onAddAssignment?: (guard: GuardDto, guardType: GuardType) => Promise<void>
+  onAddAssignment?: (selection: GuardSelection) => Promise<void>
   onRemoveAssignment?: (assignmentId: number) => Promise<void>
   /** Only for REST sections: opens the free-day assignment dialog */
   onAddFreeDayClick?: () => void
@@ -474,13 +293,14 @@ export function ShiftSection({
 
       {/* Add guard dialog */}
       {onAddAssignment && (
-        <AddGuardDialog
+        <GuardPickerDialog
           open={dialogOpen}
           onClose={() => setDialogOpen(false)}
           title={dialogTitle}
+          allowExternal
           guardSchedules={guardSchedules}
           alreadyInShiftGuardIds={alreadyInShiftGuardIds}
-          onAdd={onAddAssignment}
+          onSelect={async selection => onAddAssignment(selection)}
         />
       )}
     </div>

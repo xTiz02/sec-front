@@ -15,8 +15,9 @@ export interface SpecialServiceGuardUnityAssignmentDto {
   guardAssignment?: {
     id: number
     guard?: GuardDto
+    externalGuardId?: number
+    externalGuard?: ExternalGuardDto
   }
-  externalGuard?: ExternalGuardDto
 }
 
 export interface SpecialServiceDayAssignmentDto {
@@ -35,6 +36,12 @@ export interface SpecialServiceScheduleDto {
   id: number
   specialServiceUnityId: number
   specialServiceUnity?: SpecialServiceUnityDto
+  /** YYYY-MM-DD */
+  dateFrom?: string
+  /** YYYY-MM-DD */
+  dateTo?: string
+  totalDays?: number
+  totalAssignments?: number
   /** All DateGuardUnityAssignment records for this schedule */
   dayAssignments: SpecialServiceDayAssignmentDto[]
   createdAt?: string
@@ -71,6 +78,10 @@ export interface CreateSpecialServiceAssignmentRequest {
 
 export interface CreateSpecialServiceScheduleRequest {
   specialServiceUnityId: number
+  /** YYYY-MM-DD */
+  dateFrom: string
+  /** YYYY-MM-DD */
+  dateTo: string
   assignments: CreateSpecialServiceAssignmentRequest[]
 }
 
