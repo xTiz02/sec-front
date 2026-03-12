@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react"
-import { cn } from "@/lib/utils"
+import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   Loader2,
@@ -12,86 +12,95 @@ import {
   Users,
   ShieldAlert,
   MapPin,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { SpecialServiceScheduleSelector } from "@/components/select/SpecialServiceScheduleSelector"
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { SpecialServiceScheduleSelector } from "@/components/select/SpecialServiceScheduleSelector";
 import {
   useGetSpecialServiceScheduleByIdQuery,
   useCreateSpecialServiceExceptionMutation,
-} from "./api/specialServiceScheduleApi"
+} from "./api/specialServiceScheduleApi";
 import {
   useGetExceptionsByDateAssignmentQuery,
   useDeleteScheduleExceptionMutation,
-} from "@/features/scheduling/api/scheduleExceptionApi"
-import type { SpecialServiceDayAssignmentDto } from "./api/specialServiceScheduleModel"
+} from "@/features/scheduling/api/scheduleExceptionApi";
+import type {
+  GuardType,
+  SpecialServiceDayAssignmentDto,
+} from "./api/specialServiceScheduleModel";
 import {
   ScheduleExceptionType,
   ScheduleExceptionTypeLabel,
-} from "@/features/scheduling/api/scheduleExceptionModel"
-import { GuardTypeLabel } from "@/features/guard/api/guardModel"
+} from "@/features/scheduling/api/scheduleExceptionModel";
+import { GuardTypeLabel } from "@/features/guard/api/guardModel";
 import {
   GuardPickerDialog,
   type GuardSelection,
-} from "@/components/custom/GuardPickerDialog"
+} from "@/components/custom/GuardPickerDialog";
+import type { GuardUnityScheduleAssignmentDto } from "@/features/scheduling/api/monthlySchedulerModel";
 
 // ─── Turn tab ────────────────────────────────────────────────────────────────
 
-type TurnTab = "ALL" | "DAY" | "NIGHT"
+type TurnTab = "ALL" | "DAY" | "NIGHT";
 
 // ─── Guard name helpers ──────────────────────────────────────────────────────
 
 function guardDisplayName(a: SpecialServiceDayAssignmentDto): string {
-  const gusa = a.guardUnityScheduleAssignment
-  if (!gusa) return "—"
+  const gusa = a.guardUnityScheduleAssignment;
+  if (!gusa) return "—";
   if (gusa.guardAssignment?.externalGuard) {
-    const eg = gusa.guardAssignment.externalGuard
-    return `${eg.firstName} ${eg.lastName}`.trim() || `Guardia Ext. #${eg.id}`
+    const eg = gusa.guardAssignment.externalGuard;
+    return `${eg.firstName} ${eg.lastName}`.trim() || `Guardia Ext. #${eg.id}`;
   }
   if (gusa.guardAssignment?.guard?.employee) {
-    const emp = gusa.guardAssignment.guard.employee
-    return `${emp.firstName} ${emp.lastName}`.trim()
+    const emp = gusa.guardAssignment.guard.employee;
+    return `${emp.firstName} ${emp.lastName}`.trim();
   }
-  return `Guardia #${gusa.id}`
+  return `Guardia #${gusa.id}`;
 }
 
 function guardDoc(a: SpecialServiceDayAssignmentDto): string {
-  const gusa = a.guardUnityScheduleAssignment
-  if (!gusa) return ""
-  if (gusa.guardAssignment?.externalGuard) return gusa.guardAssignment.externalGuard.documentNumber ?? ""
-  return gusa.guardAssignment?.guard?.employee?.documentNumber ?? ""
+  const gusa = a.guardUnityScheduleAssignment;
+  if (!gusa) return "";
+  if (gusa.guardAssignment?.externalGuard)
+    return gusa.guardAssignment.externalGuard.documentNumber ?? "";
+  return gusa.guardAssignment?.guard?.employee?.documentNumber ?? "";
 }
 
 function isExternal(a: SpecialServiceDayAssignmentDto): boolean {
-  return !!a.guardUnityScheduleAssignment?.guardAssignment?.externalGuard
+  return !!a.guardUnityScheduleAssignment?.guardAssignment?.externalGuard;
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
 interface AssignmentCardProps {
-  assignment: SpecialServiceDayAssignmentDto
-  isSelected: boolean
-  onSelect: () => void
+  assignment: SpecialServiceDayAssignmentDto;
+  isSelected: boolean;
+  onSelect: () => void;
 }
 
-function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentCardProps) {
-  const name = guardDisplayName(assignment)
-  const doc = guardDoc(assignment)
-  const external = isExternal(assignment)
-  const guardType = assignment.guardUnityScheduleAssignment?.guardType
-  const template = assignment.turnAndHour?.turnTemplate
-  const turnType = template?.turnType
-  const isDay = turnType === "DAY"
+function AssignmentCard({
+  assignment,
+  isSelected,
+  onSelect,
+}: AssignmentCardProps) {
+  const name = guardDisplayName(assignment);
+  const doc = guardDoc(assignment);
+  const external = isExternal(assignment);
+  const guardType = assignment.guardUnityScheduleAssignment?.guardType;
+  const template = assignment.turnAndHour?.turnTemplate;
+  const turnType = template?.turnType;
+  const isDay = turnType === "DAY";
 
   return (
     <div
@@ -114,17 +123,26 @@ function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentCardProp
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="font-bold text-sm text-foreground">{name}</p>
               {external && (
-                <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 shrink-0 text-amber-600 border-amber-300">
+                <Badge
+                  variant="outline"
+                  className="text-[9px] px-1 py-0 h-4 shrink-0 text-amber-600 border-amber-300"
+                >
                   Ext
                 </Badge>
               )}
             </div>
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-              {guardType ? (GuardTypeLabel as any)[guardType] ?? guardType : "—"}
-              {template ? ` • ${template.timeFrom ?? ""} - ${template.timeTo ?? ""}` : ""}
+              {guardType
+                ? ((GuardTypeLabel as any)[guardType] ?? guardType)
+                : "—"}
+              {template
+                ? ` • ${template.timeFrom ?? ""} - ${template.timeTo ?? ""}`
+                : ""}
             </p>
             {doc && (
-              <p className="text-[10px] text-muted-foreground mt-0.5">Doc: {doc}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Doc: {doc}
+              </p>
             )}
           </div>
         </div>
@@ -141,7 +159,11 @@ function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentCardProp
                   : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
               )}
             >
-              {isDay ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
+              {isDay ? (
+                <Sun className="h-3 w-3" />
+              ) : (
+                <Moon className="h-3 w-3" />
+              )}
               {isDay ? "Día" : "Noche"}
             </span>
           )}
@@ -158,16 +180,60 @@ function AssignmentCard({ assignment, isSelected, onSelect }: AssignmentCardProp
         {isSelected ? "Gestionar Excepción" : "Reportar Excepción"}
       </Button>
     </div>
-  )
+  );
 }
 
 interface ExistingExceptionItemProps {
-  exception: { id: number; scheduleExceptionType: ScheduleExceptionType; motive?: string; orderIndex?: number }
-  onDelete: () => void
-  isDeleting: boolean
+  exception: import("@/features/scheduling/api/scheduleExceptionModel").ScheduleExceptionDto;
+  onDelete: () => void;
+  isDeleting: boolean;
 }
 
-function ExistingExceptionItem({ exception, onDelete, isDeleting }: ExistingExceptionItemProps) {
+function exceptionReplacementName(
+  gusa: ExistingExceptionItemProps["exception"]["guardUnityScheduleAssignment"],
+): string | null {
+  if (!gusa) return null;
+  const ext = gusa.guardAssignment?.externalGuard;
+  if (ext)
+    return (
+      `${ext.firstName} ${ext.lastName}`.trim() ||
+      `Ext. #${ext.id}`
+    );
+  const emp = gusa.guardAssignment?.guard?.employee;
+  if (emp)
+    return `${emp.firstName} ${emp.lastName}`.trim();
+  return null;
+}
+
+function getGuardDoc(
+  gusa: ExistingExceptionItemProps["exception"]["guardUnityScheduleAssignment"],
+): string | null {
+  if (!gusa) return null;
+  const ext = gusa.guardAssignment?.externalGuard;
+  if (ext) return ext.documentNumber ?? null;
+  const emp = gusa.guardAssignment?.guard?.employee;
+  if (emp) return emp.documentNumber ?? null;
+  return null;
+}
+
+function getGuardType(
+  gusa: ExistingExceptionItemProps["exception"]["guardUnityScheduleAssignment"],
+): GuardType | null {
+  if (!gusa) return null;
+  return gusa.guardType as GuardType;
+}
+
+function ExistingExceptionItem({
+  exception,
+  onDelete,
+  isDeleting,
+}: ExistingExceptionItemProps) {
+  const replacementName = exceptionReplacementName(
+    exception.guardUnityScheduleAssignment,
+  );
+  const replacementDoc = getGuardDoc(exception.guardUnityScheduleAssignment);
+  const replacementType = getGuardType(exception.guardUnityScheduleAssignment);
+
   return (
     <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">
       <div className="flex-1 min-w-0">
@@ -176,11 +242,22 @@ function ExistingExceptionItem({ exception, onDelete, isDeleting }: ExistingExce
             {ScheduleExceptionTypeLabel[exception.scheduleExceptionType]}
           </span>
           {exception.orderIndex != null && (
-            <span className="text-[10px] text-muted-foreground">#{exception.orderIndex}</span>
+            <span className="text-[10px] text-muted-foreground">
+              #{exception.orderIndex}
+            </span>
           )}
         </div>
+        {replacementName && (
+          <p className="text-xs font-semibold text-foreground truncate">
+            Reemplazo: {replacementName}
+            {replacementDoc ? ` • ${replacementDoc}` : ""}
+            {replacementType ? ` • ${GuardTypeLabel[replacementType]}` : ""}
+          </p>
+        )}
         {exception.motive && (
-          <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{exception.motive}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+            {exception.motive}
+          </p>
         )}
       </div>
       <Button
@@ -197,116 +274,127 @@ function ExistingExceptionItem({ exception, onDelete, isDeleting }: ExistingExce
         )}
       </Button>
     </div>
-  )
+  );
 }
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export function SpecialServiceExceptionPage() {
   // ── Filter state ──────────────────────────────────────────────────────────
-  const [scheduleId, setScheduleId] = useState<number | undefined>()
-  const [selectedDate, setSelectedDate] = useState<string>("")
+  const [scheduleId, setScheduleId] = useState<number | undefined>();
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   // ── UI state ──────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<TurnTab>("ALL")
-  const [selectedAssignment, setSelectedAssignment] = useState<SpecialServiceDayAssignmentDto | undefined>()
+  const [activeTab, setActiveTab] = useState<TurnTab>("ALL");
+  const [selectedAssignment, setSelectedAssignment] = useState<
+    SpecialServiceDayAssignmentDto | undefined
+  >();
 
   // ── Exception form state ──────────────────────────────────────────────────
-  const [exceptionType, setExceptionType] = useState<ScheduleExceptionType | "">("")
-  const [motive, setMotive] = useState("")
-  const [guardPickerOpen, setGuardPickerOpen] = useState(false)
+  const [exceptionType, setExceptionType] = useState<
+    ScheduleExceptionType | ""
+  >("");
+  const [motive, setMotive] = useState("");
+  const [guardPickerOpen, setGuardPickerOpen] = useState(false);
 
   // ── API Queries ───────────────────────────────────────────────────────────
   const { data: schedule, isLoading: isLoadingSchedule } =
-    useGetSpecialServiceScheduleByIdQuery(scheduleId ?? 0, { skip: !scheduleId })
+    useGetSpecialServiceScheduleByIdQuery(scheduleId ?? 0, {
+      skip: !scheduleId,
+    });
 
   const { data: existingExceptions = [], isLoading: isLoadingExceptions } =
     useGetExceptionsByDateAssignmentQuery(selectedAssignment?.id ?? 0, {
       skip: !selectedAssignment,
-    })
+    });
 
   // ── Mutations ─────────────────────────────────────────────────────────────
-  const [createException] = useCreateSpecialServiceExceptionMutation()
-  const [deleteException, { isLoading: isDeleting }] = useDeleteScheduleExceptionMutation()
+  const [createException] = useCreateSpecialServiceExceptionMutation();
+  const [deleteException, { isLoading: isDeleting }] =
+    useDeleteScheduleExceptionMutation();
 
   // ── Filter day assignments from the full schedule data ────────────────────
   const dayAssignments = useMemo(() => {
-    if (!schedule || !selectedDate) return []
-    return schedule.dayAssignments.filter(a => a.date === selectedDate)
-  }, [schedule, selectedDate])
+    if (!schedule || !selectedDate) return [];
+    return schedule.dayAssignments.filter((a) => a.date === selectedDate);
+  }, [schedule, selectedDate]);
 
   // ── Filtered by turn tab ──────────────────────────────────────────────────
   const filteredAssignments = useMemo(() => {
-    if (activeTab === "ALL") return dayAssignments
-    return dayAssignments.filter(a => {
-      const turnType = a.turnAndHour?.turnTemplate?.turnType
-      if (!turnType) return false
-      return activeTab === "DAY" ? turnType === "DAY" : turnType === "NIGHT"
-    })
-  }, [dayAssignments, activeTab])
+    if (activeTab === "ALL") return dayAssignments;
+    return dayAssignments.filter((a) => {
+      const turnType = a.turnAndHour?.turnTemplate?.turnType;
+      if (!turnType) return false;
+      return activeTab === "DAY" ? turnType === "DAY" : turnType === "NIGHT";
+    });
+  }, [dayAssignments, activeTab]);
 
   // ── IDs of internal guards already assigned for the selected day ──────────
   const alreadyInShiftGuardIds = useMemo(() => {
     return new Set(
       dayAssignments
-        .map(a => a.guardUnityScheduleAssignment?.guardAssignment?.guard?.id)
+        .map((a) => a.guardUnityScheduleAssignment?.guardAssignment?.guard?.id)
         .filter((id): id is number => id != null),
-    )
-  }, [dayAssignments])
+    );
+  }, [dayAssignments]);
 
   // ── Date range constraints ────────────────────────────────────────────────
-  const minDate = schedule?.dateFrom ?? ""
-  const maxDate = schedule?.dateTo ?? ""
+  const minDate = schedule?.dateFrom ?? "";
+  const maxDate = schedule?.dateTo ?? "";
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleScheduleChange = (id: number | undefined) => {
-    setScheduleId(id)
-    setSelectedDate("")
-    setSelectedAssignment(undefined)
-  }
+    setScheduleId(id);
+    setSelectedDate("");
+    setSelectedAssignment(undefined);
+  };
 
   const handleDateChange = (d: string) => {
-    setSelectedDate(d)
-    setSelectedAssignment(undefined)
-  }
+    setSelectedDate(d);
+    setSelectedAssignment(undefined);
+  };
 
   const handleSelectAssignment = (a: SpecialServiceDayAssignmentDto) => {
-    setSelectedAssignment(a)
-    setExceptionType("")
-    setMotive("")
-  }
+    setSelectedAssignment(a);
+    setExceptionType("");
+    setMotive("");
+  };
 
   const handleOpenGuardPicker = () => {
-    if (!exceptionType) return
-    setGuardPickerOpen(true)
-  }
+    if (!exceptionType) return;
+    setGuardPickerOpen(true);
+  };
 
   const handleGuardSelected = async (selection: GuardSelection) => {
-    if (!selectedAssignment || !exceptionType) return
+    if (!selectedAssignment || !exceptionType) return;
 
     await createException({
       dateGuardUnityAssignmentId: selectedAssignment.id,
       guardId: selection.kind === "GUARD" ? selection.guard.id : null,
-      externalGuardId: selection.kind === "EXTERNAL" ? selection.externalGuard.id : null,
+      externalGuardId:
+        selection.kind === "EXTERNAL" ? selection.externalGuard.id : null,
       guardType: selection.guardType,
       scheduleExceptionType: exceptionType,
       scheduleId: scheduleId,
       motive: motive.trim() || undefined,
-    }).unwrap()
+    }).unwrap();
 
-    setGuardPickerOpen(false)
-    setExceptionType("")
-    setMotive("")
-  }
+    setGuardPickerOpen(false);
+    setExceptionType("");
+    setMotive("");
+  };
 
   const handleDeleteException = async (id: number) => {
-    await deleteException(id).unwrap()
-  }
+    await deleteException(id).unwrap();
+  };
 
   // ── Readiness checks ──────────────────────────────────────────────────────
-  const isReady = scheduleId != null && selectedDate !== "" && !isLoadingSchedule
+  const isReady =
+    scheduleId != null && selectedDate !== "" && !isLoadingSchedule;
 
-  const absentGuardName = selectedAssignment ? guardDisplayName(selectedAssignment) : ""
+  const absentGuardName = selectedAssignment
+    ? guardDisplayName(selectedAssignment)
+    : "";
 
   // ── Formatted date label ──────────────────────────────────────────────────
   const formattedDate = selectedDate
@@ -316,7 +404,7 @@ export function SpecialServiceExceptionPage() {
         month: "long",
         year: "numeric",
       })
-    : null
+    : null;
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -325,9 +413,12 @@ export function SpecialServiceExceptionPage() {
       {/* ── Filter bar ────────────────────────────────────────────────────── */}
       <div className="shrink-0 p-4 bg-card border-b border-border shadow-sm z-10">
         <div className="mb-3">
-          <h1 className="text-xl font-extrabold tracking-tight">Excepciones — Servicio Especial</h1>
+          <h1 className="text-xl font-extrabold tracking-tight">
+            Excepciones — Servicio Especial
+          </h1>
           <p className="text-muted-foreground text-xs mt-0.5">
-            Seleccione un horario de servicio especial y una fecha para gestionar las excepciones.
+            Seleccione un horario de servicio especial y una fecha para
+            gestionar las excepciones.
           </p>
         </div>
 
@@ -352,7 +443,7 @@ export function SpecialServiceExceptionPage() {
             <Input
               type="date"
               value={selectedDate}
-              onChange={e => handleDateChange(e.target.value)}
+              onChange={(e) => handleDateChange(e.target.value)}
               disabled={!scheduleId}
               min={minDate}
               max={maxDate}
@@ -366,7 +457,8 @@ export function SpecialServiceExceptionPage() {
           <div className="mt-2 flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="text-[10px]">
               <MapPin className="h-3 w-3 mr-1" />
-              {schedule.specialServiceUnity?.unityName ?? `Servicio #${schedule.id}`}
+              {schedule.specialServiceUnity?.unityName ??
+                `Servicio #${schedule.id}`}
             </Badge>
             {schedule.dateFrom && (
               <Badge variant="outline" className="text-[10px]">
@@ -374,7 +466,8 @@ export function SpecialServiceExceptionPage() {
               </Badge>
             )}
             <Badge variant="outline" className="text-[10px]">
-              {schedule.totalAssignments ?? schedule.dayAssignments.length} asignaciones totales
+              {schedule.totalAssignments ?? schedule.dayAssignments.length}{" "}
+              asignaciones totales
             </Badge>
           </div>
         )}
@@ -403,7 +496,7 @@ export function SpecialServiceExceptionPage() {
 
             {/* Tabs */}
             <div className="shrink-0 flex border-b border-border px-4">
-              {(["ALL", "DAY", "NIGHT"] as const).map(tab => (
+              {(["ALL", "DAY", "NIGHT"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -435,10 +528,12 @@ export function SpecialServiceExceptionPage() {
               ) : filteredAssignments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
                   <Users className="h-8 w-8 text-muted-foreground/40 mb-2" />
-                  <p className="text-sm text-muted-foreground">Sin asignaciones para este día</p>
+                  <p className="text-sm text-muted-foreground">
+                    Sin asignaciones para este día
+                  </p>
                 </div>
               ) : (
-                filteredAssignments.map(a => (
+                filteredAssignments.map((a) => (
                   <AssignmentCard
                     key={a.id}
                     assignment={a}
@@ -459,7 +554,8 @@ export function SpecialServiceExceptionPage() {
                   Seleccione un guardia
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-xs">
-                  Haga clic en "Reportar Excepción" en una tarjeta de la izquierda para gestionar una ausencia.
+                  Haga clic en "Reportar Excepción" en una tarjeta de la
+                  izquierda para gestionar una ausencia.
                 </p>
               </div>
             ) : (
@@ -486,7 +582,8 @@ export function SpecialServiceExceptionPage() {
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     {selectedAssignment.turnAndHour?.turnTemplate && (
                       <Badge variant="outline" className="text-[10px]">
-                        {selectedAssignment.turnAndHour.turnTemplate.timeFrom} - {selectedAssignment.turnAndHour.turnTemplate.timeTo}
+                        {selectedAssignment.turnAndHour.turnTemplate.timeFrom} -{" "}
+                        {selectedAssignment.turnAndHour.turnTemplate.timeTo}
                       </Badge>
                     )}
                     <Badge variant="outline" className="text-[10px]">
@@ -499,7 +596,8 @@ export function SpecialServiceExceptionPage() {
                   {/* ── Existing exceptions ──────────────────────────────── */}
                   {isLoadingExceptions ? (
                     <div className="flex items-center gap-2 p-6 text-muted-foreground text-sm">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Cargando excepciones...
+                      <Loader2 className="h-4 w-4 animate-spin" /> Cargando
+                      excepciones...
                     </div>
                   ) : existingExceptions.length > 0 ? (
                     <div className="p-6 border-b border-border">
@@ -507,7 +605,7 @@ export function SpecialServiceExceptionPage() {
                         Excepciones registradas ({existingExceptions.length})
                       </h3>
                       <div className="space-y-2">
-                        {existingExceptions.map(ex => (
+                        {existingExceptions.map((ex) => (
                           <ExistingExceptionItem
                             key={ex.id}
                             exception={ex}
@@ -529,16 +627,20 @@ export function SpecialServiceExceptionPage() {
                     {/* Exception type + motive */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-bold">Tipo de Excepción</Label>
+                        <Label className="text-xs font-bold">
+                          Tipo de Excepción
+                        </Label>
                         <Select
                           value={exceptionType}
-                          onValueChange={v => setExceptionType(v as ScheduleExceptionType)}
+                          onValueChange={(v) =>
+                            setExceptionType(v as ScheduleExceptionType)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Seleccione..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {Object.values(ScheduleExceptionType).map(t => (
+                            {Object.values(ScheduleExceptionType).map((t) => (
                               <SelectItem key={t} value={t}>
                                 {ScheduleExceptionTypeLabel[t]}
                               </SelectItem>
@@ -548,12 +650,14 @@ export function SpecialServiceExceptionPage() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-bold">Motivo / Descripción</Label>
+                        <Label className="text-xs font-bold">
+                          Motivo / Descripción
+                        </Label>
                         <Textarea
                           rows={2}
                           placeholder="Detalles adicionales..."
                           value={motive}
-                          onChange={e => setMotive(e.target.value)}
+                          onChange={(e) => setMotive(e.target.value)}
                           className="resize-none text-sm"
                         />
                       </div>
@@ -565,7 +669,8 @@ export function SpecialServiceExceptionPage() {
                         Buscar Reemplazo
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Seleccione el tipo de excepción y luego busque un guardia de reemplazo.
+                        Seleccione el tipo de excepción y luego busque un
+                        guardia de reemplazo.
                       </p>
                       <Button
                         variant="outline"
@@ -610,9 +715,12 @@ export function SpecialServiceExceptionPage() {
           ) : (
             <>
               <ShieldAlert className="h-10 w-10 text-muted-foreground/30 mb-3" />
-              <h3 className="text-base font-bold mb-1">Seleccione los filtros</h3>
+              <h3 className="text-base font-bold mb-1">
+                Seleccione los filtros
+              </h3>
               <p className="text-sm text-muted-foreground max-w-sm">
-                Elija un horario de servicio especial y una fecha para visualizar la dotación asignada del día.
+                Elija un horario de servicio especial y una fecha para
+                visualizar la dotación asignada del día.
               </p>
             </>
           )}
@@ -630,5 +738,5 @@ export function SpecialServiceExceptionPage() {
         onSelect={handleGuardSelected}
       />
     </div>
-  )
+  );
 }
