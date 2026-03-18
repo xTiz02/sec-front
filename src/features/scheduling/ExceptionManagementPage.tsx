@@ -47,6 +47,10 @@ import {
   ScheduleExceptionTypeLabel,
 } from "./api/scheduleExceptionModel"
 import { GuardType, GuardTypeLabel } from "@/features/guard/api/guardModel"
+import {
+  GuardPickerDialog,
+  type GuardSelection,
+} from "@/components/custom/GuardPickerDialog"
 
 // ─── Tab type ─────────────────────────────────────────────────────────────────
 
@@ -97,16 +101,34 @@ const STATUS_LABEL: Record<AssignmentStatus, string> = {
 function getGuardName(pool: GuardUnityScheduleAssignmentDto[], id: number): string {
   const g = pool.find(p => p.id === id)
   const emp = g?.guardAssignment?.guard?.employee
-  return emp ? `${emp.firstName} ${emp.lastName}` : `Guardia #${id}`
-}
-
-function getGuardDoc(pool: GuardUnityScheduleAssignmentDto[], id: number): string {
-  const g = pool.find(p => p.id === id)
-  return g?.guardAssignment?.guard?.employee?.documentNumber ?? ""
+  if (emp) return `${emp.firstName} ${emp.lastName}`
+  const ext = g?.guardAssignment?.externalGuard
+  if (ext) return `${ext.firstName} ${ext.lastName}`
+  return `Guardia #${id}`
 }
 
 function getGuardType(pool: GuardUnityScheduleAssignmentDto[], id: number): GuardType | undefined {
   return pool.find(p => p.id === id)?.guardType
+}
+
+// ─── Exception replacement name from DTO ──────────────────────────────────────
+
+function exceptionReplacementName(ex: ScheduleExceptionDto): string | null {
+  const gusa = ex.guardUnityScheduleAssignment
+  if (!gusa) return null
+  const ext = gusa.guardAssignment?.externalGuard
+  if (ext) return `${ext.firstName} ${ext.lastName}`.trim() || `Ext. #${ext.id}`
+  const emp = gusa.guardAssignment?.guard?.employee
+  if (emp) return `${emp.firstName} ${emp.lastName}`.trim()
+  return null
+}
+
+function exceptionReplacementDoc(ex: ScheduleExceptionDto): string | null {
+  const gusa = ex.guardUnityScheduleAssignment
+  if (!gusa) return null
+  const ext = gusa.guardAssignment?.externalGuard
+  if (ext) return ext.documentNumber ?? null
+  return gusa.guardAssignment?.guard?.employee?.documentNumber ?? null
 }
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
@@ -184,15 +206,14 @@ function AssignmentCard({ assignment, guardPool, turnLabel, isSelected, onSelect
 
 interface ExistingExceptionItemProps {
   exception: ScheduleExceptionDto
-  guardPool: GuardUnityScheduleAssignmentDto[]
   onDelete: () => void
   isDeleting: boolean
 }
 
-function ExistingExceptionItem({ exception, guardPool, onDelete, isDeleting }: ExistingExceptionItemProps) {
-  const replacementName = getGuardName(guardPool, exception.guardUnityScheduleAssignmentId)
-  const replacementDoc = getGuardDoc(guardPool, exception.guardUnityScheduleAssignmentId)
-  const replacementType = getGuardType(guardPool, exception.guardUnityScheduleAssignmentId)
+function ExistingExceptionItem({ exception, onDelete, isDeleting }: ExistingExceptionItemProps) {
+  const replacementName = exceptionReplacementName(exception)
+  const replacementDoc = exceptionReplacementDoc(exception)
+  const replacementType = exception.guardUnityScheduleAssignment?.guardType
 
   return (
     <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">
@@ -205,11 +226,13 @@ function ExistingExceptionItem({ exception, guardPool, onDelete, isDeleting }: E
             <span className="text-[10px] text-muted-foreground">#{exception.orderIndex}</span>
           )}
         </div>
-        <p className="text-xs text-foreground font-semibold">
-          Reemplazo: {replacementName}
-          {replacementDoc ? ` • ${replacementDoc}` : ""}
-          {replacementType ? ` • ${GuardTypeLabel[replacementType]}` : ""}
-        </p>
+        {replacementName && (
+          <p className="text-xs text-foreground font-semibold truncate">
+            Reemplazo: {replacementName}
+            {replacementDoc ? ` • ${replacementDoc}` : ""}
+            {replacementType ? ` • ${GuardTypeLabel[replacementType as GuardType]}` : ""}
+          </p>
+        )}
         {exception.motive && (
           <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{exception.motive}</p>
         )}
@@ -246,9 +269,8 @@ export function ExceptionManagementPage() {
   // ── Exception form state ──────────────────────────────────────────────────
   const [exceptionType, setExceptionType] = useState<ScheduleExceptionType | "">("")
   const [motive, setMotive] = useState("")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [guardTypeFilter, setGuardTypeFilter] = useState<GuardType | "">("")
-  const [selectedReplacementId, setSelectedReplacementId] = useState<number | undefined>()
+  const [guardPickerOpen, setGuardPickerOpen] = useState(false)
+  const [selectedGuardSelection, setSelectedGuardSelection] = useState<GuardSelection | null>(null)
 
   // ── Derived from selectedDate ─────────────────────────────────────────────
   const dateObj = useMemo(
@@ -341,46 +363,24 @@ export function ExceptionManagementPage() {
     return undefined
   }
 
-  // ── IDs already assigned for the selected day ─────────────────────────────
-  const dayOccupiedGuardIds = useMemo(() => {
+  // ── IDs of internal guards already assigned today (for GuardPickerDialog) ─
+  const alreadyInShiftGuardIds = useMemo(() => {
     return new Set(
       dayAssignments
-        .filter(
-          a =>
-            a.scheduleAssignmentType === "NORMAL" ||
-            a.scheduleAssignmentType === "ADITIONAL",
-        )
-        .map(a => a.guardUnityScheduleAssignmentId),
+        .map(a => {
+          const gs = guardPool.find(g => g.id === a.guardUnityScheduleAssignmentId)
+          return gs?.guardAssignment?.guardId
+        })
+        .filter((id): id is number => id != null),
     )
-  }, [dayAssignments])
-
-  // ── Available replacement guards (filtered) ───────────────────────────────
-  const candidateGuards = useMemo(() => {
-    return guardPool
-      .filter(g => {
-        if (g.id === selectedAssignment?.guardUnityScheduleAssignmentId) return false
-        if (guardTypeFilter && g.guardType !== guardTypeFilter) return false
-        if (searchQuery) {
-          const emp = g.guardAssignment?.guard?.employee
-          const name =
-            `${emp?.firstName ?? ""} ${emp?.lastName ?? ""}`.toLowerCase()
-          const doc = emp?.documentNumber ?? ""
-          const q = searchQuery.toLowerCase()
-          if (!name.includes(q) && !doc.toLowerCase().includes(q)) return false
-        }
-        return true
-      })
-      .map(g => ({ ...g, isAvailable: !dayOccupiedGuardIds.has(g.id) }))
-  }, [guardPool, selectedAssignment, dayOccupiedGuardIds, searchQuery, guardTypeFilter])
+  }, [dayAssignments, guardPool])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleSelectAssignment = (a: DateGuardUnityAssignmentDto) => {
     setSelectedAssignment(a)
     setExceptionType("")
     setMotive("")
-    setSearchQuery("")
-    setGuardTypeFilter("")
-    setSelectedReplacementId(undefined)
+    setSelectedGuardSelection(null)
   }
 
   const handleContractChange = (id: number | undefined) => {
@@ -399,10 +399,17 @@ export function ExceptionManagementPage() {
     setSelectedAssignment(undefined)
   }
 
+  const handleGuardSelected = async (selection: GuardSelection) => {
+    setSelectedGuardSelection(selection)
+    setGuardPickerOpen(false)
+  }
+
   const handleConfirmException = async () => {
-    if (!scheduleMonthly || !selectedAssignment || !exceptionType || !selectedReplacementId) return
+    if (!scheduleMonthly || !selectedAssignment || !exceptionType || !selectedGuardSelection) return
     await createException({
-      guardUnityScheduleAssignmentId: selectedReplacementId,
+      guardId: selectedGuardSelection.kind === "GUARD" ? selectedGuardSelection.guard.id : null,
+      externalGuardId: selectedGuardSelection.kind === "EXTERNAL" ? selectedGuardSelection.externalGuard.id : null,
+      guardType: selectedGuardSelection.guardType,
       motive: motive.trim() || undefined,
       dateGuardUnityAssignmentId: selectedAssignment.id,
       scheduleMonthlyId: scheduleMonthly.id,
@@ -410,9 +417,7 @@ export function ExceptionManagementPage() {
     }).unwrap()
     setExceptionType("")
     setMotive("")
-    setSelectedReplacementId(undefined)
-    setSearchQuery("")
-    setGuardTypeFilter("")
+    setSelectedGuardSelection(null)
   }
 
   const handleDeleteException = async (id: number) => {
@@ -428,8 +433,14 @@ export function ExceptionManagementPage() {
     ? getGuardName(guardPool, selectedAssignment.guardUnityScheduleAssignmentId)
     : ""
 
-  const canConfirm =
-    !!exceptionType && !!selectedReplacementId && !isCreating
+  const canConfirm = !!exceptionType && !!selectedGuardSelection && !isCreating
+
+  // ── Selected replacement display label ─────────────────────────────────────
+  const selectedReplacementLabel = selectedGuardSelection
+    ? selectedGuardSelection.kind === "GUARD"
+      ? `${selectedGuardSelection.guard.employee?.firstName ?? ""} ${selectedGuardSelection.guard.employee?.lastName ?? ""}`.trim()
+      : `${selectedGuardSelection.externalGuard.firstName} ${selectedGuardSelection.externalGuard.lastName}`.trim()
+    : null
 
   // ── Formatted date label ──────────────────────────────────────────────────
   const formattedDate = selectedDate
@@ -639,7 +650,6 @@ export function ExceptionManagementPage() {
                           <ExistingExceptionItem
                             key={ex.id}
                             exception={ex}
-                            guardPool={guardPool}
                             onDelete={() => handleDeleteException(ex.id)}
                             isDeleting={isDeleting}
                           />
@@ -688,112 +698,48 @@ export function ExceptionManagementPage() {
                       </div>
                     </div>
 
-                    {/* Guard search */}
+                    {/* Guard picker */}
                     <div className="space-y-3 pt-4 border-t border-border">
                       <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Buscar Reemplazo
                       </h4>
-                      <div className="flex flex-col md:flex-row gap-3">
-                        <div className="relative flex-1">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                          <Input
-                            className="pl-9 text-sm"
-                            placeholder="Buscar por nombre o documento..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                          />
+
+                      {selectedReplacementLabel ? (
+                        <div className="flex items-center justify-between p-3 rounded-lg border border-primary/40 bg-primary/5">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                              <UserRound className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">
+                                {selectedReplacementLabel}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">
+                                {selectedGuardSelection?.kind === "EXTERNAL"
+                                  ? "Guardia externo"
+                                  : GuardTypeLabel[selectedGuardSelection!.guardType]}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs shrink-0"
+                            onClick={() => setSelectedGuardSelection(null)}
+                          >
+                            Cambiar
+                          </Button>
                         </div>
-                        <Select
-                          value={guardTypeFilter}
-                          onValueChange={v =>
-                            setGuardTypeFilter(v === "__all__" ? "" : (v as GuardType))
-                          }
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => setGuardPickerOpen(true)}
                         >
-                          <SelectTrigger className="w-full md:w-44">
-                            <SelectValue placeholder="Tipo de guardia" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__all__">Todos los tipos</SelectItem>
-                            {Object.values(GuardType).map(t => (
-                              <SelectItem key={t} value={t}>
-                                {GuardTypeLabel[t]}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Guard list */}
-                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                        {candidateGuards.length === 0 ? (
-                          <p className="text-sm text-muted-foreground text-center py-6">
-                            No se encontraron guardias disponibles
-                          </p>
-                        ) : (
-                          candidateGuards.map(g => {
-                            const emp = g.guardAssignment?.guard?.employee
-                            const name = emp
-                              ? `${emp.firstName} ${emp.lastName}`
-                              : `Guardia #${g.id}`
-                            const isSelected = selectedReplacementId === g.id
-
-                            return (
-                              <button
-                                key={g.id}
-                                type="button"
-                                disabled={!g.isAvailable}
-                                onClick={() =>
-                                  g.isAvailable && setSelectedReplacementId(g.id)
-                                }
-                                className={cn(
-                                  "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors",
-                                  isSelected
-                                    ? "border-primary bg-primary/5 dark:bg-primary/10"
-                                    : g.isAvailable
-                                      ? "border-border hover:border-primary/50 bg-card"
-                                      : "border-border bg-muted/30 opacity-60 cursor-not-allowed",
-                                )}
-                              >
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                                    <UserRound className="h-4 w-4 text-muted-foreground" />
-                                  </div>
-                                  <div className="min-w-0">
-                                    <p className="font-bold text-sm text-foreground truncate">
-                                      {name}
-                                    </p>
-                                    <p className="text-[10px] text-muted-foreground truncate">
-                                      {emp?.documentNumber ? `Doc: ${emp.documentNumber} • ` : ""}
-                                      {GuardTypeLabel[g.guardType]}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                  {g.isAvailable ? (
-                                    <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 dark:text-green-400">
-                                      <span className="size-1.5 rounded-full bg-green-500 inline-block" />
-                                      Disponible
-                                    </span>
-                                  ) : (
-                                    <span className="flex items-center gap-1 text-[10px] font-bold text-destructive">
-                                      <span className="size-1.5 rounded-full bg-destructive inline-block" />
-                                      En turno
-                                    </span>
-                                  )}
-                                  <div
-                                    className={cn(
-                                      "size-4 rounded-full border-2 transition-colors shrink-0",
-                                      isSelected
-                                        ? "border-primary bg-primary"
-                                        : "border-muted-foreground/40",
-                                    )}
-                                  />
-                                </div>
-                              </button>
-                            )
-                          })
-                        )}
-                      </div>
+                          <Search className="h-4 w-4 mr-2" />
+                          Buscar Guardia de Reemplazo
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -860,6 +806,18 @@ export function ExceptionManagementPage() {
           )}
         </div>
       )}
+
+      {/* ── Guard Picker Dialog ─────────────────────────────────────────── */}
+      <GuardPickerDialog
+        open={guardPickerOpen}
+        onClose={() => setGuardPickerOpen(false)}
+        title="Seleccionar Guardia de Reemplazo"
+        description="Busca un guardia interno o externo para reemplazar al guardia ausente."
+        allowExternal
+        guardSchedules={guardPool}
+        alreadyInShiftGuardIds={alreadyInShiftGuardIds}
+        onSelect={handleGuardSelected}
+      />
     </div>
   )
 }

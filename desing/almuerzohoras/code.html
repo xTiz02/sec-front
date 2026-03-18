@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Panel de Jornada de Seguridad</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Custom Configuration for Theme Colors -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            security: {
+              primary: '#1e293b', // Slate 800
+              secondary: '#334155', // Slate 700
+              accent: '#3b82f6', // Blue 500
+              warning: '#f59e0b', // Amber 500
+              danger: '#ef4444', // Red 500
+              success: '#10b981', // Emerald 500
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="animations">
+    @keyframes pulse-soft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    .animate-pulse-soft {
+      animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="bg-gray-50 font-sans text-slate-900 min-h-screen flex flex-col">
+<!-- BEGIN: Navigation Header -->
+<header class="bg-security-primary text-white p-4 sticky top-0 z-50 shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-security-accent rounded-full flex items-center justify-center font-bold text-lg">
+          JD
+        </div>
+<div>
+<h1 class="text-sm font-semibold">Juan Delgado</h1>
+<p class="text-xs text-slate-300">ID: #88291 • Sector Norte</p>
+</div>
+</div>
+<div class="bg-security-success px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider animate-pulse-soft">
+        En Turno
+      </div>
+</div>
+</header>
+<!-- END: Navigation Header -->
+<main class="flex-1 p-4 space-y-6">
+<!-- BEGIN: Main Shift Timer Section -->
+<section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-center" data-purpose="shift-timer-display">
+<h2 class="text-slate-500 text-sm font-medium uppercase tracking-widest mb-2">Tiempo Transcurrido</h2>
+<div class="text-5xl font-mono font-bold text-security-primary tabular-nums" id="shift-timer">
+        05:24:12
+      </div>
+<div class="mt-4 flex justify-center gap-2 text-xs text-slate-400">
+<span>Inicio: 08:00 AM</span>
+<span>•</span>
+<span>Fin: 06:00 PM</span>
+</div>
+</section>
+<!-- END: Main Shift Timer Section -->
+<!-- BEGIN: Lunch Section (Conditional Visibility) -->
+<!-- Note: This section would be hidden for 'Descansero' type guards -->
+<section class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100" data-purpose="lunch-management" id="lunch-section">
+<div class="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+<h3 class="font-bold text-slate-700 flex items-center gap-2">
+<svg class="h-5 w-5 text-security-accent" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Receso de Almuerzo
+        </h3>
+<span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded uppercase">60m + 15m Tol.</span>
+</div>
+<div class="p-6">
+<!-- Default State: Button to Start Lunch -->
+<div class="space-y-4" id="lunch-start-ui">
+<p class="text-sm text-slate-500 text-center">Inicie su periodo de descanso reglamentario.</p>
+<button class="w-full bg-security-accent hover:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2" id="start-lunch-btn" onclick="toggleLunchMode(true)">
+            Iniciar Almuerzo
+          </button>
+</div>
+<!-- Active State: Countdown Timer (Hidden by default) -->
+<div class="hidden space-y-4 text-center" id="lunch-active-ui">
+<p class="text-sm font-semibold text-security-warning uppercase">Tiempo Restante de Almuerzo</p>
+<div class="text-6xl font-mono font-bold text-security-warning tabular-nums" id="lunch-countdown">
+            75:00
+          </div>
+<div class="bg-amber-50 border border-amber-100 p-3 rounded-lg">
+<p class="text-xs text-amber-800">Usted se encuentra en estatus <span class="font-bold">FUERA DE PUESTO</span>.</p>
+</div>
+<button class="w-full bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-all active:scale-95" onclick="toggleLunchMode(false)">
+            Finalizar Almuerzo
+          </button>
+</div>
+</div>
+</section>
+<!-- END: Lunch Section -->
+<!-- BEGIN: Role Info (Descansero View Example) -->
+<!-- This would normally be visible ONLY if guard type is 'Descansero' -->
+<section class="hidden bg-slate-100 rounded-2xl p-6 border-2 border-dashed border-slate-300 text-center" id="descansero-info">
+<div class="flex justify-center mb-2">
+<svg class="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<p class="text-slate-600 font-medium">Perfil: Descansero</p>
+<p class="text-xs text-slate-500 mt-1">La sección de almuerzo no aplica para su tipo de jornada de relevo.</p>
+</section>
+<!-- END: Role Info -->
+<!-- BEGIN: Quick Actions Grid -->
+<nav class="grid grid-cols-2 gap-4" data-purpose="quick-actions">
+<button class="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center gap-2 shadow-sm">
+<div class="w-10 h-10 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="text-xs font-bold text-slate-700">Pánico</span>
+</button>
+<button class="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col items-center gap-2 shadow-sm">
+<div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="text-xs font-bold text-slate-700">Novedad</span>
+</button>
+</nav>
+<!-- END: Quick Actions Grid -->
+</main>
+<!-- BEGIN: Bottom Status Bar -->
+<footer class="bg-white border-t border-slate-200 p-4">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-[10px] text-slate-400 uppercase font-bold">Estado del Sistema</span>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-security-success rounded-full"></div>
+<span class="text-sm font-medium text-slate-600">GPS Conectado</span>
+</div>
+</div>
+<button class="bg-slate-100 text-slate-500 px-4 py-2 rounded-lg text-xs font-bold uppercase">
+        Ver Historial
+      </button>
+</div>
+</footer>
+<!-- END: Bottom Status Bar -->
+<!-- BEGIN: Logic Scripts -->
+<script data-purpose="toggle-logic">
+    /**
+     * Toggles between standard shift UI and active lunch UI
+     * @param {boolean} isLunch - Whether the lunch break is starting
+     */
+    function toggleLunchMode(isLunch) {
+      const startUI = document.getElementById('lunch-start-ui');
+      const activeUI = document.getElementById('lunch-active-ui');
+      const statusBadge = document.querySelector('header .bg-security-success, header .bg-security-warning');
+
+      if (isLunch) {
+        startUI.classList.add('hidden');
+        activeUI.classList.remove('hidden');
+        
+        // Update header status
+        statusBadge.textContent = 'En Almuerzo';
+        statusBadge.classList.replace('bg-security-success', 'bg-security-warning');
+      } else {
+        startUI.classList.remove('hidden');
+        activeUI.classList.add('hidden');
+        
+        // Update header status
+        statusBadge.textContent = 'En Turno';
+        statusBadge.classList.replace('bg-security-warning', 'bg-security-success');
+      }
+    }
+
+    // Example of how to simulate the 'Descansero' type
+    // This logic would normally come from the backend/data-store
+    function applyUserRole(role) {
+      if (role === 'descansero') {
+        document.getElementById('lunch-section').classList.add('hidden');
+        document.getElementById('descansero-info').classList.remove('hidden');
+      }
+    }
+    
+    // Default call - keeps lunch section visible for 'Regular Guard'
+    // applyUserRole('descansero'); 
+  </script>
+<!-- END: Logic Scripts -->
+</body></html>

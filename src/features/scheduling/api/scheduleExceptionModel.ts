@@ -42,8 +42,11 @@ export interface ScheduleExceptionDto {
 // ─── Request Types ────────────────────────────────────────────────────────────
 
 export interface CreateScheduleExceptionRequest {
-  /** The replacement guard's GuardUnityScheduleAssignment id */
-  guardUnityScheduleAssignmentId: number
+  /** Internal replacement guard id. Backend creates GuardUnityScheduleAssignment if needed. */
+  guardId?: number | null
+  /** External replacement guard id. Backend creates GuardUnityScheduleAssignment if needed. */
+  externalGuardId?: number | null
+  guardType?: string
   motive?: string
   description?: string
   /** The absent guard's DateGuardUnityAssignment id */

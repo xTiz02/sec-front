@@ -1,7 +1,7 @@
 import type { PageResponse } from "@/features/securiiy/api/securityModel"
 import MultipleSelector, { type Option } from "./custom/MultipleSelector"
 import { useDebounce } from "@/hooks/useDebounse"
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,6 +91,7 @@ export function SearchableSelector<T>({
 }: SearchableSelectorProps<T>) {
   const [inputValue, setInputValue] = useState("")
   const [selectedOptions, setSelectedOptions] = useState<Option[]>([])
+  const labelCache = useRef<Map<string, string>>(new Map())
 
   const debouncedInput = useDebounce(inputValue, debounceDelay)
 
@@ -113,20 +114,29 @@ export function SearchableSelector<T>({
     return data.content.map(toOption)
   }, [data, toOption])
 
-  // Sync external value to internal state
+  // Populate label cache whenever new options are loaded
   useEffect(() => {
-    if (value === undefined) return
+    options.forEach(o => { if (o.label) labelCache.current.set(o.value, o.label) })
+  }, [options])
 
-    if (multiple) {
-      setSelectedOptions(Array.isArray(value) ? value : [value])
-    } else {
-      setSelectedOptions(Array.isArray(value) ? value : [value])
+  // Sync external value to internal state, enriching empty labels from cache
+  useEffect(() => {
+    if (value === undefined) {
+      setSelectedOptions([])
+      return
     }
-  }, [value, multiple])
+    const incoming = Array.isArray(value) ? value : [value]
+    const enriched = incoming.map(v => ({
+      ...v,
+      label: v.label || labelCache.current.get(v.value) || v.value,
+    }))
+    setSelectedOptions(enriched)
+  }, [value])
 
-  // Handle selection change
+  // Handle selection change — also update cache with confirmed labels
   const handleChange = useCallback(
     (newOptions: Option[]) => {
+      newOptions.forEach(o => { if (o.label) labelCache.current.set(o.value, o.label) })
       setSelectedOptions(newOptions)
 
       if (multiple) {

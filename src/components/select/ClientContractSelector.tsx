@@ -36,6 +36,7 @@ export const ClientContractSelector: React.FC<ClientContractSelectorProps> = ({
       const option = Array.isArray(selected) ? selected[0] : selected
       onChange(option ? Number(option.value) : undefined)
     },
+    
     [onChange],
   )
 

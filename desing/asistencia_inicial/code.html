@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SecuManager - Control de Asistencia</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Lucide Icons (via CDN for visual elements) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+<style data-purpose="layout-custom">
+    /* Custom scrollbar for mobile feel */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    /* Simulated camera overlay */
+    #camera-overlay {
+      display: none;
+      background: rgba(0,0,0,0.9);
+      z-index: 100;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+<!-- BEGIN: MainHeader -->
+<header class="bg-slate-900 text-white p-6 rounded-b-3xl shadow-lg" data-purpose="app-header">
+<div class="flex justify-between items-center mb-4">
+<div class="flex items-center space-x-2">
+<div class="bg-blue-600 p-2 rounded-lg">
+<i class="w-6 h-6 text-white" data-lucide="shield-check"></i>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight">SecuManager</h1>
+<p class="text-xs text-slate-400">Panel del Guardia</p>
+</div>
+</div>
+<button class="bg-slate-800 p-2 rounded-full">
+<i class="w-5 h-5" data-lucide="bell"></i>
+</button>
+</div>
+<div class="bg-slate-800/50 rounded-2xl p-4 flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-12 h-12 bg-slate-700 rounded-full border-2 border-blue-500 overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCa5txVTdVwOG4sPPnfSEaCZtlK0yY3do8Dpdh_-vhWKoyXHHWfkMw3-fiUo84twjfmm3s56XfCNb8vUV7DhllhbSwAGjtb3zaBix8Nj4cWvxqi-EnhfuSG4FgZkses6sVjTXaDOojsImX9mvz-BsZ79mWE1PVNFIBgE7q6LbGt1bZGX4xuHM6TtYMRmohH07BiZXfVH6Qhw2fDoqLPlyXzlGRRfqxVfTN-p5s67yCBlKOkgnZayxjIEJ0HWxuXJvhLetBYtlTvww"/>
+</div>
+<div>
+<p class="text-xs text-slate-400">Bienvenido de nuevo</p>
+<p class="text-sm font-semibold">Carlos Rodríguez</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-lg font-mono font-bold text-blue-400" id="current-time">08:00:00</span>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 p-5 space-y-6 max-w-md mx-auto w-full">
+<!-- BEGIN: ShiftInformation -->
+<section class="grid grid-cols-2 gap-4" data-purpose="shift-info">
+<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+<div class="flex items-center text-blue-600 mb-1">
+<i class="w-4 h-4 mr-1" data-lucide="clock"></i>
+<span class="text-[10px] uppercase font-bold tracking-wider">Turno Actual</span>
+</div>
+<p class="text-sm font-semibold text-slate-800">Matutino (08:00 - 16:00)</p>
+</div>
+<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+<div class="flex items-center text-emerald-600 mb-1">
+<i class="w-4 h-4 mr-1" data-lucide="map-pin"></i>
+<span class="text-[10px] uppercase font-bold tracking-wider">Unidad</span>
+</div>
+<p class="text-sm font-semibold text-slate-800">Corporativo Polanco II</p>
+</div>
+</section>
+<!-- END: ShiftInformation -->
+<!-- BEGIN: GeolocationMap -->
+<section class="bg-white p-2 rounded-3xl shadow-sm border border-slate-100" data-purpose="map-section">
+<div class="relative w-full h-48 rounded-2xl overflow-hidden bg-slate-200">
+<!-- Static Map Placeholder representing the location and 1000m radius -->
+<img alt="Ubicación GPS" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc8QxDMGqaW6t_9L3rP6-_B8vAhCzrKInmqCYYu3b3H0a4-H3duySiG_46kiW-AqliXjshUjxmMEcGdwgMEawtKJwO6LIzIhRku3rurNMh9aicIRZpJ36yhlAQL6HHq3R_RJT_-0kMxDDlQkC5RYdbRJL_VM_-Q_seOQPqJoMZQVGIqCMq0mluirzVMkVLwErGIUMDJx4a6J8-7Du3GXhWxvzgm61sJtahF7As_UJXs8jSDz66I9YYBJ4bM9HhWK-rH00w8RnPag"/>
+<!-- Radar Circle Overlay (Visual representation) -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="w-40 h-40 border-2 border-blue-500/30 bg-blue-500/10 rounded-full animate-pulse flex items-center justify-center">
+<div class="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-lg"></div>
+</div>
+</div>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full border border-slate-200 flex items-center">
+<div class="w-2 h-2 bg-green-500 rounded-full animate-ping mr-2"></div>
+<span class="text-[10px] font-bold text-slate-700">GPS ACTIVO</span>
+</div>
+</div>
+<div class="p-3 text-center">
+<p class="text-xs text-slate-500">Estás a <span class="font-bold text-slate-800">145m</span> del punto de acceso permitido.</p>
+</div>
+</section>
+<!-- END: GeolocationMap -->
+<!-- BEGIN: AttendanceAction -->
+<section class="space-y-4" data-purpose="attendance-controls">
+<!-- Logic Toggle for Demo (Out of Range State) -->
+<div class="flex items-center justify-center space-x-2 pb-2">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" id="range-toggle" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+<span class="ml-2 text-[10px] font-medium text-slate-500 uppercase">Simular Fuera de Rango</span>
+</label>
+</div>
+<!-- Main Action Button -->
+<button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-bold text-lg shadow-xl shadow-blue-200 transition-all active:scale-95 flex flex-col items-center justify-center space-y-1" id="btn-marcar">
+<i class="w-8 h-8 mb-1" data-lucide="fingerprint"></i>
+<span>MARCAR ENTRADA</span>
+</button>
+<!-- Warning Message (Hidden by default) -->
+<div class="hidden bg-red-50 border border-red-100 p-4 rounded-2xl flex items-start space-x-3" id="out-of-range-warning">
+<i class="w-5 h-5 text-red-500 shrink-0" data-lucide="alert-triangle"></i>
+<p class="text-xs text-red-700">Estás fuera del radio permitido (1000m). La marcación ha sido deshabilitada por seguridad. Acércate a la Unidad para continuar.</p>
+</div>
+</section>
+<!-- END: AttendanceAction -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: NavigationFooter -->
+<footer class="bg-white border-t border-slate-100 safe-area-bottom px-8 py-4" data-purpose="bottom-nav">
+<nav class="flex justify-between items-center max-w-md mx-auto">
+<button class="flex flex-col items-center space-y-1 text-blue-600">
+<i class="w-6 h-6" data-lucide="calendar-check"></i>
+<span class="text-[10px] font-medium">Asistencia</span>
+</button>
+<button class="flex flex-col items-center space-y-1 text-slate-400">
+<i class="w-6 h-6" data-lucide="file-text"></i>
+<span class="text-[10px] font-medium">Reportes</span>
+</button>
+<button class="flex flex-col items-center space-y-1 text-slate-400">
+<i class="w-6 h-6" data-lucide="user"></i>
+<span class="text-[10px] font-medium">Mi Perfil</span>
+</button>
+</nav>
+</footer>
+<!-- END: NavigationFooter -->
+<!-- BEGIN: CameraModal -->
+<div class="fixed inset-0 flex flex-col items-center justify-between p-10" id="camera-overlay">
+<div class="text-center text-white mt-10">
+<h3 class="text-xl font-bold">Verificación Facial</h3>
+<p class="text-sm text-slate-300">Coloca tu rostro en el centro</p>
+</div>
+<!-- Simulated Camera Viewfinder -->
+<div class="relative w-64 h-64 border-4 border-blue-500 rounded-full overflow-hidden">
+<img alt="Selfie Simulation" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADPAUJpJgHY3q1XkV3x1IAwKlZjeIbBVhjPw3AfuN_cIHps2S-DiHdZFDVQPpjpTRWH7wPIOMClPkeNJRGHxDkf8-7-_eLh12h5vQjVV2fOeo9oBNsRA8PAEf630KOd-yG9Ooqzkw4A-bJSKDkUwtVgRYIczT-EtPogwEPj3tRDRCpJKaYC8QvPu6HzKSccamgNHxTWj07VqGN_KhmqQJPcLDRa7YkPUiwlnky5REwniP3BAV-rqNSWgznIYCrJNLUfhlxqJ6xGw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-blue-500/20 to-transparent"></div>
+</div>
+<div class="w-full space-y-4 safe-area-bottom">
+<button class="w-full bg-white text-slate-900 font-bold py-4 rounded-2xl flex items-center justify-center space-x-2" id="btn-take-photo">
+<i class="w-5 h-5" data-lucide="camera"></i>
+<span>TOMAR FOTO</span>
+</button>
+<button class="w-full bg-transparent text-white/70 font-medium py-2 rounded-xl text-sm" id="btn-cancel-camera">
+        Cancelar
+      </button>
+</div>
+</div>
+<!-- END: CameraModal -->
+<script data-purpose="time-manager">
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('es-ES', { hour12: false });
+      document.getElementById('current-time').textContent = timeString;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+  </script>
+<script data-purpose="interaction-handlers">
+    const btnMarcar = document.getElementById('btn-marcar');
+    const rangeToggle = document.getElementById('range-toggle');
+    const warning = document.getElementById('out-of-range-warning');
+    const cameraOverlay = document.getElementById('camera-overlay');
+    const btnTakePhoto = document.getElementById('btn-take-photo');
+    const btnCancelCamera = document.getElementById('btn-cancel-camera');
+
+    // Toggle range simulation
+    rangeToggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        btnMarcar.classList.add('opacity-50', 'pointer-events-none', 'bg-slate-400', 'shadow-none');
+        btnMarcar.classList.remove('bg-blue-600', 'shadow-blue-200');
+        warning.classList.remove('hidden');
+      } else {
+        btnMarcar.classList.remove('opacity-50', 'pointer-events-none', 'bg-slate-400', 'shadow-none');
+        btnMarcar.classList.add('bg-blue-600', 'shadow-blue-200');
+        warning.classList.add('hidden');
+      }
+    });
+
+    // Camera simulated flow
+    btnMarcar.addEventListener('click', () => {
+      cameraOverlay.style.display = 'flex';
+    });
+
+    btnCancelCamera.addEventListener('click', () => {
+      cameraOverlay.style.display = 'none';
+    });
+
+    btnTakePhoto.addEventListener('click', () => {
+      alert('Marcación exitosa: Entrada registrada a las ' + new Date().toLocaleTimeString());
+      cameraOverlay.style.display = 'none';
+      btnMarcar.innerHTML = `
+        <i data-lucide="check-circle" class="w-8 h-8 mb-1"></i>
+        <span>SALIDA REGISTRADA</span>
+      `;
+      btnMarcar.classList.replace('bg-blue-600', 'bg-emerald-600');
+      btnMarcar.classList.replace('shadow-blue-200', 'shadow-emerald-200');
+      lucide.createIcons(); // Re-render icons
+    });
+  </script>
+<script data-purpose="icon-initialization">
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body></html>
