@@ -133,6 +133,8 @@ function GuardCard({ assignment, guardSchedule, faded = false, onUpdateGuardType
 
 interface ShiftSectionProps {
   turnType: TurnType | "REST"
+  /** Override the generic "Turno Día / Turno Noche" title with the specific turn name */
+  label?: string
   assignments: DateGuardUnityAssignmentDto[]
   guardSchedules: GuardUnityScheduleAssignmentDto[]
   required: number
@@ -150,6 +152,7 @@ interface ShiftSectionProps {
 
 export function ShiftSection({
   turnType,
+  label,
   assignments,
   guardSchedules,
   required,
@@ -186,11 +189,12 @@ export function ShiftSection({
     )
 
   const title =
-    turnType === TurnType.DAY
+    label ??
+    (turnType === TurnType.DAY
       ? "Turno Día"
       : turnType === TurnType.NIGHT
         ? "Turno Noche"
-        : "Descansos"
+        : "Descansos")
 
   const dialogTitle =
     turnType === TurnType.DAY

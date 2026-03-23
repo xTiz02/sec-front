@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { X, CalendarDays, AlertTriangle, Loader2, Trash2, Bed, Umbrella, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -396,7 +396,7 @@ interface DayDetailPanelProps {
   contractSchedules: ContractScheduleUnitTemplateDto[]
   onClose: () => void
   onUpdateGuardType: (scheduleAssignmentId: number, guardType: GuardType) => Promise<void>
-  onAddAssignment: (selection: GuardSelection, turnType: TurnType) => Promise<void>
+  onAddAssignment: (selection: GuardSelection, turnAndHourId: number) => Promise<void>
   onRemoveAssignment: (assignmentId: number) => Promise<void>
   /** Remove guard from monthly pool entirely (cascades daily assignments) */
   onRemoveFromMonthlyPool: (gsId: number) => Promise<void>
@@ -435,16 +435,6 @@ export function DayDetailPanel({
   const [freeDayDialogOpen, setFreeDayDialogOpen] = useState(false)
   const [vacationDialogOpen, setVacationDialogOpen] = useState(false)
 
-  // ── Shift wrappers ────────────────────────────────────────────────────────
-  const handleAddDay = useCallback(
-    (selection: GuardSelection) => onAddAssignment(selection, TurnType.DAY),
-    [onAddAssignment],
-  )
-  const handleAddNight = useCallback(
-    (selection: GuardSelection) => onAddAssignment(selection, TurnType.NIGHT),
-    [onAddAssignment],
-  )
-
   // ── Monthly pool removal ───────────────────────────────────────────────────
   const handleConfirmRemoveFromPool = async () => {
     if (!confirmRemoveGs) return
@@ -472,12 +462,13 @@ export function DayDetailPanel({
     ? (nightTurnAndHours ?? []).reduce((sum, t) => sum + (t.turnTemplate?.numGuards ?? 0), 0)
     : (template?.numTurnNight ?? 0)
 
-  const { dayAssignments, nightAssignments, restAssignments, vacationAssignments } =
+  const { byTurnAndHour, restAssignments, vacationAssignments, dayCount, nightCount } =
     useMemo(() => {
-      const day: DateGuardUnityAssignmentDto[] = []
-      const night: DateGuardUnityAssignmentDto[] = []
+      const map = new Map<number, DateGuardUnityAssignmentDto[]>()
       const rest: DateGuardUnityAssignmentDto[] = []
       const vacation: DateGuardUnityAssignmentDto[] = []
+      let dayCount = 0
+      let nightCount = 0
 
       for (const a of assignments) {
         if (a.scheduleAssignmentType === ScheduleAssignmentType.FREE_DAY) {
@@ -487,18 +478,20 @@ export function DayDetailPanel({
           a.hasVacation
         ) {
           vacation.push(a)
-        } else if (a.turnAndHour?.turnTemplate?.turnType === TurnType.DAY) {
-          day.push(a)
-        } else if (a.turnAndHour?.turnTemplate?.turnType === TurnType.NIGHT) {
-          night.push(a)
         } else {
-          day.push(a)
+          const tahId = a.turnAndHourId ?? -1
+          const existing = map.get(tahId) ?? []
+          existing.push(a)
+          map.set(tahId, existing)
+          const tt = a.turnAndHour?.turnTemplate?.turnType
+          if (tt === TurnType.DAY) dayCount++
+          else if (tt === TurnType.NIGHT) nightCount++
         }
       }
-      return { dayAssignments: day, nightAssignments: night, restAssignments: rest, vacationAssignments: vacation }
+      return { byTurnAndHour: map, restAssignments: rest, vacationAssignments: vacation, dayCount, nightCount }
     }, [assignments])
 
-  const totalAssigned = dayAssignments.length + nightAssignments.length
+  const totalAssigned = dayCount + nightCount
   const missing = Math.max(0, required - totalAssigned)
 
   /** Guard IDs that already have a FREE_DAY assignment today */
@@ -705,45 +698,39 @@ export function DayDetailPanel({
             <div className="flex gap-2">
               <span
                 className={
-                  dayAssignments.length >= requiredDay
+                  dayCount >= requiredDay
                     ? "text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800"
                     : "text-[10px] bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-bold border border-destructive/20"
                 }
               >
-                Día: {dayAssignments.length}/{requiredDay}
+                Día: {dayCount}/{requiredDay}
               </span>
               <span
                 className={
-                  nightAssignments.length >= requiredNight
+                  nightCount >= requiredNight
                     ? "text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800"
                     : "text-[10px] bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-bold border border-destructive/20"
                 }
               >
-                Noche: {nightAssignments.length}/{requiredNight}
+                Noche: {nightCount}/{requiredNight}
               </span>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            <ShiftSection
-              turnType={TurnType.DAY}
-              assignments={dayAssignments}
-              guardSchedules={guardSchedules}
-              required={requiredDay}
-              turnAndHours={dayTurnAndHours}
-              onUpdateGuardType={onUpdateGuardType}
-              onAddAssignment={dayTurnAndHours?.length ? handleAddDay : undefined}
-              onRemoveAssignment={onRemoveAssignment}
-            />
-            <ShiftSection
-              turnType={TurnType.NIGHT}
-              assignments={nightAssignments}
-              guardSchedules={guardSchedules}
-              required={requiredNight}
-              turnAndHours={nightTurnAndHours}
-              onUpdateGuardType={onUpdateGuardType}
-              onAddAssignment={nightTurnAndHours?.length ? handleAddNight : undefined}
-              onRemoveAssignment={onRemoveAssignment}
-            />
+            {(template?.turnAndHours ?? []).map(tah => (
+              <ShiftSection
+                key={tah.id}
+                turnType={tah.turnTemplate?.turnType ?? TurnType.DAY}
+                label={tah.turnTemplate?.name}
+                assignments={byTurnAndHour.get(tah.id) ?? []}
+                guardSchedules={guardSchedules}
+                required={tah.turnTemplate?.numGuards ?? 0}
+                turnAndHours={[tah]}
+                onUpdateGuardType={onUpdateGuardType}
+                onAddAssignment={sel => onAddAssignment(sel, tah.id)}
+                onRemoveAssignment={onRemoveAssignment}
+              />
+            ))}
             <ShiftSection
               turnType={"REST"}
               assignments={restAssignments}

@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from "react";
 import { Month } from "@/features/assignment/api/assignmentModel";
 import { GuardType } from "@/features/guard/api/guardModel";
 import type { GuardDto } from "@/features/guard/api/guardModel";
-import { TurnType } from "@/features/contractSchedule/api/contractScheduleModel";
 import type { GuardSelection } from "@/components/custom/GuardPickerDialog";
 import {
   MONTH_INDEX,
@@ -213,7 +212,7 @@ export function MonthlySchedulerPage() {
   );
 
   const handleAddAssignment = useCallback(
-    async (selection: GuardSelection, turnType: TurnType) => {
+    async (selection: GuardSelection, turnAndHourId: number) => {
       if (!selectedDate || !contractUnityId || !scheduleMonthlyId) return;
 
       const guardType = selection.guardType;
@@ -261,24 +260,7 @@ export function MonthlySchedulerPage() {
         }
       }
 
-      // Step 2: resolve TurnAndHour.id from contractSchedules for this day + turnType
-      const dowEnums = [
-        "SUNDAY",
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY",
-      ];
-      const dowStr = dowEnums[new Date(selectedDate + "T00:00:00").getDay()];
-      const dayTemplate = contractSchedules.find((cs) => cs.dayOfWeek === dowStr);
-      const turnAndHourId =
-        dayTemplate?.turnAndHours?.find(
-          (t) => t.turnTemplate?.turnType === turnType,
-        )?.id ?? null;
-
-      // Step 3: create the daily assignment
+      // Step 2: create the daily assignment with the specific turnAndHourId
       await addDailyAssignment({
         date: selectedDate,
         guardUnityScheduleAssignmentId: gsId,
@@ -291,7 +273,6 @@ export function MonthlySchedulerPage() {
       contractUnityId,
       scheduleMonthlyId,
       guardSchedules,
-      contractSchedules,
       updateGuardUnitySchedule,
       createGuardMonthlyAssignment,
       addDailyAssignment,

@@ -267,6 +267,7 @@ export function GuardAssistancePage() {
 
         {viewState === "AWAITING_ENTRY" && (
           <AwaitingEntryView
+            shiftDate={data?.shift?.date}
             turnTemplate={turnTemplate}
             unity={unity}
             isInRange={isInRange}

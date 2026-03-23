@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils"
-import { AlertTriangle, Clock, Fingerprint, Loader2, MapPin } from "lucide-react"
+import { AlertTriangle, CalendarDays, Clock, Fingerprint, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AssistanceType } from "../api/assistanceModel"
 import type { ContractUnityInfo, TurnTemplateInfo } from "../api/assistanceModel"
 import { fmtTime } from "../utils/assistanceUtils"
 
 interface AwaitingEntryViewProps {
+  shiftDate?: string
   turnTemplate?: TurnTemplateInfo
   unity?: ContractUnityInfo
   isInRange: boolean | null
@@ -15,7 +16,18 @@ interface AwaitingEntryViewProps {
   onMark: (type: AssistanceType) => void
 }
 
+function fmtDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString("es-PE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
+}
+
 export function AwaitingEntryView({
+  shiftDate,
   turnTemplate,
   unity,
   isInRange,
@@ -26,6 +38,14 @@ export function AwaitingEntryView({
 }: AwaitingEntryViewProps) {
   return (
     <>
+      {/* Shift date */}
+      {shiftDate && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-border flex items-center gap-3">
+          <CalendarDays className="h-4 w-4 text-blue-500 shrink-0" />
+          <span className="text-sm font-bold text-foreground capitalize">{fmtDate(shiftDate)}</span>
+        </div>
+      )}
+
       {/* Shift info cards */}
       {turnTemplate && (
         <div className="grid grid-cols-2 gap-3">
