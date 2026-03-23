@@ -6,7 +6,7 @@ export const HOME_PATH = "/"
 export const PUBLIC_BASE_ENDPOINT = BASE_URL + "/public/api/v1"
 
 // AUTHORIZATION
-export const SELF_ENDPOINT = `${SECURE_API_V1}/users/self`
+export const SELF_ENDPOINT = `${SECURE_API_V1}/user/self`
 export const HOST = import.meta.env.VITE_HOST || "http://localhost:5173"
 export const SIGN_OUT_ENDPOINT = PUBLIC_BASE_ENDPOINT + "/logout"
 export const LOGIN_ENDPOINT = PUBLIC_BASE_ENDPOINT + "/auth/login"

@@ -37,6 +37,7 @@ import { SpecialServiceSchedulePage } from "@/features/specialService/schedule/S
 import { SpecialServiceScheduleFormPage } from "@/features/specialService/schedule/SpecialServiceScheduleFormPage";
 import { SpecialServiceScheduleDetailPage } from "@/features/specialService/schedule/SpecialServiceScheduleDetailPage";
 import { SpecialServiceExceptionPage } from "@/features/specialService/schedule/SpecialServiceExceptionPage";
+import { GuardAssistancePage } from "@/features/assistance/GuardAssistancePage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -106,6 +107,9 @@ export const AppRoutes = () => (
           <Route path="schedules/:id" element={<SpecialServiceScheduleDetailPage />} />
           <Route path="exceptions" element={<SpecialServiceExceptionPage />} />
         </Route>
+
+        {/* Attendance (Guard mobile view) */}
+        <Route path="attendance" element={<GuardAssistancePage />} />
 
         {/* Security */}
         <Route path="security">

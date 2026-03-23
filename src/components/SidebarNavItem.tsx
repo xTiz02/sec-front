@@ -84,7 +84,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Asistencia",
     icon: <UserCheck size={18} />,
     children: [
-      { label: "Registro Diario", path: "/modules/attendance/daily" },
+      { label: "Registro Diario", path: "/modules/attendance" },
       { label: "Historial", path: "/modules/attendance/history" },
     ],
   },

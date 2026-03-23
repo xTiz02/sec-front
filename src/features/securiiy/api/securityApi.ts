@@ -23,7 +23,7 @@ export const securityApi = baseApi.injectEndpoints({
 
     getUsers: builder.query<PageResponse<UserWithEmployeeDto>, PageParams>({
       query: ({ page = 0, size = 10, search }) => ({
-        url: `/users/all`,
+        url: `/user/all`,
         params: { page, size, ...(search ? { search } : {}) },
       }),
       providesTags: result =>
@@ -39,13 +39,13 @@ export const securityApi = baseApi.injectEndpoints({
     }),
 
     getUserById: builder.query<UserDto, number>({
-      query: id => `/users/${id}`,
+      query: id => `/user/${id}`,
       providesTags: (_r, _e, id) => [{ type: "User", id }],
     }),
 
     createUser: builder.mutation<UserDto, CreateUserRequest>({
       query: body => ({
-        url: `/users`,
+        url: `/user`,
         method: "POST",
         body,
       }),
@@ -54,7 +54,7 @@ export const securityApi = baseApi.injectEndpoints({
 
     updateUser: builder.mutation<UserDto, { id: number; body: UpdateUserRequest }>({
       query: ({ id, body }) => ({
-        url: `/users/${id}`,
+        url: `/user/${id}`,
         method: "PUT",
         body,
       }),
@@ -66,7 +66,7 @@ export const securityApi = baseApi.injectEndpoints({
 
     deleteUser: builder.mutation<void, number>({
       query: id => ({
-        url: `/users/${id}`,
+        url: `/user/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (_r, _e, id) => [
@@ -80,7 +80,7 @@ export const securityApi = baseApi.injectEndpoints({
       { userId: number; body: AssignProfilesRequest }
     >({
       query: ({ userId, body }) => ({
-        url: `/users/${userId}/profiles`,
+        url: `/user/${userId}/profiles`,
         method: "PUT",
         body,
       }),
@@ -89,7 +89,7 @@ export const securityApi = baseApi.injectEndpoints({
 
     toggleUserStatus: builder.mutation<UserDto, { id: number; enabled: boolean }>({
       query: ({ id, enabled }) => ({
-        url: `/users/${id}/status`,
+        url: `/user/${id}/status`,
         method: "PATCH",
         body: { enabled },
       }),
