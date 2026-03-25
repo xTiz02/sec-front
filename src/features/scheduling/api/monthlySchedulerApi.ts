@@ -107,6 +107,7 @@ export const monthlySchedulerApi = baseApi.injectEndpoints({
       invalidatesTags: (_r, _e, id) => [
         { type: "DailyAssignment", id },
         { type: "DailyAssignment", id: "LIST" },
+        { type: "GuardUnitySchedule", id: "LIST" },
       ],
     }),
 
