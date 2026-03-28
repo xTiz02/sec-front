@@ -9,10 +9,12 @@ import {
 import { AssistanceType, AssistanceProblemType } from "./api/assistanceModel"
 import type { GuardAssistanceEventDto } from "./api/assistanceModel"
 import {
-  BREAK_TOLERANCE_MINUTES,
+  BREAK_MIN_MINUTES,
+  BREAK_MAX_MINUTES,
   deriveViewState,
   nowSeconds,
   parseTimeStr,
+  eventMarkTime,
   initials,
 } from "./utils/assistanceUtils"
 import type { ViewState } from "./utils/assistanceUtils"
@@ -44,7 +46,7 @@ export function GuardAssistancePage() {
   const [justifyEvent, setJustifyEvent] = useState<GuardAssistanceEventDto | null>(null)
 
   // ── GPS ──────────────────────────────────────────────────────────────────────
-  const unity = data?.shift?.contractUnity
+  const unity = data?.shift?.contractUnity ?? data?.shift?.specialServiceUnity
   const { coords, distanceMeters, isInRange, error: gpsError } = useGps(
     unity?.latitude,
     unity?.longitude,
@@ -73,23 +75,27 @@ export function GuardAssistancePage() {
   // Shift elapsed seconds (entry mark → now)
   const shiftElapsedSeconds = useMemo(() => {
     if (!entryEvent) return 0
-    return Math.max(0, nowSeconds() - parseTimeStr(entryEvent.markTime))
+    return Math.max(0, nowSeconds() - parseTimeStr(eventMarkTime(entryEvent)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entryEvent, tick])
 
-  // Break remaining seconds (75 min tolerance − elapsed since break start)
-  const breakRemainingSeconds = useMemo(() => {
+  // Break elapsed seconds since break start
+  const breakElapsedSeconds = useMemo(() => {
     if (!breakStartEvent || breakEndEvent) return 0
-    const elapsed = Math.max(0, nowSeconds() - parseTimeStr(breakStartEvent.markTime))
-    return Math.max(0, BREAK_TOLERANCE_MINUTES * 60 - elapsed)
+    return Math.max(0, nowSeconds() - parseTimeStr(eventMarkTime(breakStartEvent)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [breakStartEvent, breakEndEvent, tick])
 
-  const breakIsOverdue = useMemo(() => {
-    if (!breakStartEvent || breakEndEvent) return false
-    return nowSeconds() - parseTimeStr(breakStartEvent.markTime) > BREAK_TOLERANCE_MINUTES * 60
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [breakStartEvent, breakEndEvent, tick])
+  // Guard can only mark break end after BREAK_MIN_MINUTES (45 min)
+  const canMarkBreakEnd = !!breakStartEvent && !breakEndEvent && breakElapsedSeconds >= BREAK_MIN_MINUTES * 60
+
+  // Seconds remaining until guard CAN mark break end (counts down to 45 min mark)
+  const breakWaitSeconds = Math.max(0, BREAK_MIN_MINUTES * 60 - breakElapsedSeconds)
+
+  // Seconds remaining until system auto-closes break (counts down to 50 min mark)
+  const breakRemainingSeconds = Math.max(0, BREAK_MAX_MINUTES * 60 - breakElapsedSeconds)
+
+  const breakIsOverdue = !!breakStartEvent && !breakEndEvent && breakElapsedSeconds > BREAK_MAX_MINUTES * 60
 
   // Extra hours elapsed (from startTime while endTime is not yet set)
   const extraHoursElapsedSeconds = useMemo(() => {
@@ -146,6 +152,19 @@ export function GuardAssistancePage() {
 
   // ── Mark button disabled logic ────────────────────────────────────────────────
   const canMark = isInRange !== false
+
+  // Entry window: available from 15 min before timeFrom to 5 min after timeFrom
+  const entryWindowReached = useMemo(() => {
+    if (!turnTemplate?.timeFrom || !data?.shift?.date) return true
+    const [y, m, d] = data.shift.date.split("-").map(Number)
+    const [sh, sm, ss = 0] = turnTemplate.timeFrom.split(":").map(Number)
+    const windowOpen = new Date(y, m - 1, d, sh, sm, ss)
+    windowOpen.setMinutes(windowOpen.getMinutes() - 15)
+    return new Date() >= windowOpen
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turnTemplate?.timeFrom, data?.shift?.date, tick])
+
+  const canMarkEntry = canMark && entryWindowReached
 
   // Exit is only allowed once the shift end datetime has passed.
   // Uses the assignment date (not today) so yesterday's incomplete shifts work correctly.
@@ -272,7 +291,8 @@ export function GuardAssistancePage() {
             unity={unity}
             isInRange={isInRange}
             distanceMeters={distanceMeters}
-            canMark={canMark}
+            entryWindowReached={entryWindowReached}
+            canMarkEntry={canMarkEntry}
             isMarking={isMarking}
             onMark={triggerMark}
           />
@@ -295,6 +315,8 @@ export function GuardAssistancePage() {
             lateRequests={lateRequests}
             canMark={canMark}
             canMarkExit={canMarkExit}
+            canMarkBreakEnd={canMarkBreakEnd}
+            breakWaitSeconds={breakWaitSeconds}
             isMarking={isMarking}
             onMark={triggerMark}
             onJustify={setJustifyEvent}

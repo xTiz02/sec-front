@@ -11,9 +11,19 @@ interface AwaitingEntryViewProps {
   unity?: ContractUnityInfo
   isInRange: boolean | null
   distanceMeters: number | null
-  canMark: boolean
+  entryWindowReached: boolean
+  canMarkEntry: boolean
   isMarking: boolean
   onMark: (type: AssistanceType) => void
+}
+
+/** Compute the time when entry becomes available (timeFrom − 15 min) */
+function entryAvailableAt(timeFrom: string): string {
+  const [h, m] = timeFrom.split(":").map(Number)
+  const total = h * 60 + m - 15
+  const hh = Math.floor(((total % 1440) + 1440) % 1440 / 60)
+  const mm = ((total % 60) + 60) % 60
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`
 }
 
 function fmtDate(dateStr: string): string {
@@ -32,7 +42,8 @@ export function AwaitingEntryView({
   unity,
   isInRange,
   distanceMeters,
-  canMark,
+  entryWindowReached,
+  canMarkEntry,
   isMarking,
   onMark,
 }: AwaitingEntryViewProps) {
@@ -101,6 +112,17 @@ export function AwaitingEntryView({
         </div>
       </div>
 
+      {/* Time window not yet open */}
+      {!entryWindowReached && turnTemplate && (
+        <div className="flex items-start gap-3 p-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl">
+          <Clock className="h-5 w-5 text-slate-500 shrink-0 mt-0.5" />
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            La entrada estará disponible a partir de las{" "}
+            <span className="font-bold">{entryAvailableAt(turnTemplate.timeFrom)}</span> hrs.
+          </p>
+        </div>
+      )}
+
       {/* Out-of-range warning */}
       {isInRange === false && (
         <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl">
@@ -115,7 +137,7 @@ export function AwaitingEntryView({
       {/* Entry button */}
       <Button
         className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-blue-200 dark:shadow-blue-900/40 flex flex-col gap-1"
-        disabled={!canMark || isMarking}
+        disabled={!canMarkEntry || isMarking}
         onClick={() => onMark(AssistanceType.ENTRY)}
       >
         {isMarking ? (

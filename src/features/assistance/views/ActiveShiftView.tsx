@@ -14,7 +14,7 @@ import type {
   GuardRequestDto,
   TurnTemplateInfo,
 } from "../api/assistanceModel"
-import { fmtHHMMSS, fmtTime } from "../utils/assistanceUtils"
+import { eventMarkTime, fmtHHMMSS, fmtTime } from "../utils/assistanceUtils"
 import type { ViewState } from "../utils/assistanceUtils"
 import { LatenessAlert } from "../components/LatenessAlert"
 import { QuickActions } from "../components/QuickActions"
@@ -33,6 +33,8 @@ interface ActiveShiftViewProps {
   lateRequests: GuardRequestDto[]
   canMark: boolean
   canMarkExit: boolean
+  canMarkBreakEnd: boolean
+  breakWaitSeconds: number
   isMarking: boolean
   onMark: (type: AssistanceType) => void
   onJustify: (event: GuardAssistanceEventDto) => void
@@ -52,6 +54,8 @@ export function ActiveShiftView({
   lateRequests,
   canMark,
   canMarkExit,
+  canMarkBreakEnd,
+  breakWaitSeconds,
   isMarking,
   onMark,
   onJustify,
@@ -75,12 +79,7 @@ export function ActiveShiftView({
         )}
         {entryEvent && (
           <div className="mt-1 text-[10px] text-slate-400">
-            Marcaste a las {fmtTime(entryEvent.markTime)}
-            {entryEvent.differenceInMinutes != null && entryEvent.differenceInMinutes > 0 && (
-              <span className="ml-1 text-amber-500 font-bold">
-                (+{entryEvent.differenceInMinutes} min)
-              </span>
-            )}
+            Marcaste a las {fmtTime(eventMarkTime(entryEvent))}
           </div>
         )}
       </section>
@@ -94,7 +93,7 @@ export function ActiveShiftView({
               Receso de Almuerzo
             </h3>
             <span className="text-[10px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 rounded uppercase">
-              60m + 15m Tol.
+              45m + 5m Tol.
             </span>
           </div>
 
@@ -123,39 +122,57 @@ export function ActiveShiftView({
             {/* Break active — countdown */}
             {viewState === "ON_BREAK" && (
               <div className="space-y-4 text-center">
-                <p
-                  className={cn(
-                    "text-xs font-bold uppercase",
-                    breakIsOverdue ? "text-destructive" : "text-amber-600 dark:text-amber-400",
-                  )}
-                >
-                  {breakIsOverdue ? "¡Tiempo de almuerzo agotado!" : "Tiempo Restante de Almuerzo"}
-                </p>
-                <div
-                  className={cn(
-                    "text-6xl font-mono font-extrabold tabular-nums",
-                    breakIsOverdue ? "text-destructive" : "text-amber-500",
-                  )}
-                >
-                  {fmtHHMMSS(breakRemainingSeconds)}
-                </div>
-                {breakIsOverdue ? (
-                  <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
-                    <p className="text-xs text-destructive font-medium">
-                      Has superado el tiempo máximo de almuerzo. Registra tu regreso.
+                {!canMarkBreakEnd ? (
+                  <>
+                    <p className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">
+                      Tiempo hasta poder marcar regreso
                     </p>
-                  </div>
+                    <div className="text-6xl font-mono font-extrabold tabular-nums text-slate-600 dark:text-slate-300">
+                      {fmtHHMMSS(breakWaitSeconds)}
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 p-3 rounded-lg">
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        Podrás registrar tu regreso una vez cumplidos los <span className="font-bold">45 minutos</span>.
+                      </p>
+                    </div>
+                  </>
                 ) : (
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 p-3 rounded-lg">
-                    <p className="text-xs text-amber-800 dark:text-amber-300">
-                      Estatus: <span className="font-bold">FUERA DE PUESTO</span>
+                  <>
+                    <p
+                      className={cn(
+                        "text-xs font-bold uppercase",
+                        breakIsOverdue ? "text-destructive" : "text-amber-600 dark:text-amber-400",
+                      )}
+                    >
+                      {breakIsOverdue ? "¡Tiempo de almuerzo agotado!" : "Tiempo Restante de Almuerzo"}
                     </p>
-                  </div>
+                    <div
+                      className={cn(
+                        "text-6xl font-mono font-extrabold tabular-nums",
+                        breakIsOverdue ? "text-destructive" : "text-amber-500",
+                      )}
+                    >
+                      {fmtHHMMSS(breakRemainingSeconds)}
+                    </div>
+                    {breakIsOverdue ? (
+                      <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
+                        <p className="text-xs text-destructive font-medium">
+                          Has superado el tiempo máximo de almuerzo. Registra tu regreso.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 p-3 rounded-lg">
+                        <p className="text-xs text-amber-800 dark:text-amber-300">
+                          Estatus: <span className="font-bold">FUERA DE PUESTO</span>
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
                 <Button
                   variant={breakIsOverdue ? "destructive" : "outline"}
                   className="w-full h-11 font-bold rounded-xl"
-                  disabled={isMarking}
+                  disabled={!canMarkBreakEnd || isMarking}
                   onClick={() => onMark(AssistanceType.BREAK_END)}
                 >
                   {isMarking ? (
@@ -175,7 +192,7 @@ export function ActiveShiftView({
                 <span className="text-muted-foreground">
                   Almuerzo completado ·{" "}
                   <span className="font-bold text-foreground">
-                    {fmtTime(breakStartEvent.markTime)} – {fmtTime(breakEndEvent.markTime)}
+                    {fmtTime(eventMarkTime(breakStartEvent))} – {fmtTime(eventMarkTime(breakEndEvent))}
                   </span>
                 </span>
               </div>

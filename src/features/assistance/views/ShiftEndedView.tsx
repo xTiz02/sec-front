@@ -5,7 +5,7 @@ import type {
   GuardRequestDto,
   TurnTemplateInfo,
 } from "../api/assistanceModel"
-import { fmtHHMMSS, fmtTime, parseTimeStr } from "../utils/assistanceUtils"
+import { eventMarkTime, fmtHHMMSS, fmtTime, parseTimeStr } from "../utils/assistanceUtils"
 import { LatenessAlert } from "../components/LatenessAlert"
 
 function fmtDate(dateStr: string): string {
@@ -45,10 +45,10 @@ export function ShiftEndedView({
   onJustify,
 }: ShiftEndedViewProps) {
   const totalWorkedSeconds = exitEvent
-    ? parseTimeStr(exitEvent.markTime) -
-      parseTimeStr(entryEvent?.markTime ?? exitEvent.markTime) -
+    ? parseTimeStr(eventMarkTime(exitEvent)) -
+      parseTimeStr(entryEvent ? eventMarkTime(entryEvent) : eventMarkTime(exitEvent)) -
       (breakStartEvent && breakEndEvent
-        ? parseTimeStr(breakEndEvent.markTime) - parseTimeStr(breakStartEvent.markTime)
+        ? parseTimeStr(eventMarkTime(breakEndEvent)) - parseTimeStr(eventMarkTime(breakStartEvent))
         : 0)
     : 0
 
@@ -101,21 +101,21 @@ export function ShiftEndedView({
           {entryEvent && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Entrada</span>
-              <span className="font-bold">{fmtTime(entryEvent.markTime)}</span>
+              <span className="font-bold">{fmtTime(eventMarkTime(entryEvent))}</span>
             </div>
           )}
           {breakStartEvent && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Almuerzo</span>
               <span className="font-bold">
-                {fmtTime(breakStartEvent.markTime)} –{" "}
-                {breakEndEvent ? fmtTime(breakEndEvent.markTime) : "—"}
+                {fmtTime(eventMarkTime(breakStartEvent))} –{" "}
+                {breakEndEvent ? fmtTime(eventMarkTime(breakEndEvent)) : "—"}
               </span>
             </div>
           )}
           <div className="flex justify-between">
             <span className="text-muted-foreground">Salida</span>
-            <span className="font-bold">{fmtTime(exitEvent.markTime)}</span>
+            <span className="font-bold">{fmtTime(eventMarkTime(exitEvent))}</span>
           </div>
           <div className="pt-2 border-t border-border flex justify-between">
             <span className="text-muted-foreground">Total trabajado</span>

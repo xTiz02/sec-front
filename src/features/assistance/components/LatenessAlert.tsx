@@ -8,7 +8,7 @@ import {
   RequestStatusLabel,
 } from "../api/assistanceModel"
 import type { GuardAssistanceEventDto, GuardRequestDto } from "../api/assistanceModel"
-import { fmtTime } from "../utils/assistanceUtils"
+import { eventMarkTime, fmtTime } from "../utils/assistanceUtils"
 
 interface LatenessAlertProps {
   event: GuardAssistanceEventDto
@@ -38,13 +38,8 @@ export function LatenessAlert({ event, request, onJustify }: LatenessAlertProps)
             {AssistanceProblemTypeLabel[event.assistanceProblemType]}
           </span>
           <span className="text-[10px] text-muted-foreground">
-            {AssistanceTypeLabel[event.assistanceType]} · {fmtTime(event.markTime)}
+            {AssistanceTypeLabel[event.assistanceType]} · {fmtTime(eventMarkTime(event))}
           </span>
-          {event.differenceInMinutes != null && event.differenceInMinutes > 0 && (
-            <span className="text-[10px] text-destructive font-bold">
-              +{event.differenceInMinutes} min
-            </span>
-          )}
         </div>
         {request && (
           <p className="text-[10px] text-muted-foreground mt-0.5">

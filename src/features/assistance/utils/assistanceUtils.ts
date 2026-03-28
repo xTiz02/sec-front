@@ -3,7 +3,8 @@ import type { GuardCurrentShiftDto } from "../api/assistanceModel"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-export const BREAK_TOLERANCE_MINUTES = 75 // 60 min + 15 min tolerance
+export const BREAK_MIN_MINUTES = 45  // guard must wait at least this long before marking break end
+export const BREAK_MAX_MINUTES = 50  // system auto-closes break at this point (45 + 5 tolerance)
 
 // ─── View state ───────────────────────────────────────────────────────────────
 
@@ -74,6 +75,22 @@ export function fmtHHMMSS(totalSeconds: number): string {
 /** "HH:mm:ss" → "HH:mm" */
 export function fmtTime(t: string): string {
   return t.slice(0, 5)
+}
+
+/**
+ * Returns the effective "HH:mm:ss" time for an event.
+ * Guards who mark manually have markTime set; system auto-closes have markTime=null
+ * and only systemMark (ISO datetime) available.
+ */
+export function eventMarkTime(event: { markTime: string | null; systemMark: string }): string {
+  if (event.markTime) return event.markTime
+  // Extract "HH:mm:ss" from ISO "2026-03-28T12:02:23.35322"
+  return event.systemMark.slice(11, 19)
+}
+
+/** True when the mark was auto-closed by the system (guard did not mark manually) */
+export function isSystemMark(event: { markTime: string | null }): boolean {
+  return event.markTime == null
 }
 
 export function initials(name: string): string {

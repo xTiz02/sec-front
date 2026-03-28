@@ -70,15 +70,24 @@ export interface ContractUnityInfo {
   allowedRadius?: number
 }
 
+export interface SpecialServiceUnityInfo {
+  id: number
+  unityName: string
+  address?: string
+  latitude?: number
+  longitude?: number
+  allowedRadius?: number
+}
+
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
 
 export interface GuardAssistanceEventDto {
   id: number
   dateGuardUnityAssignmentId: number
   photoUrl?: string
-  markDate: string              // "yyyy-MM-dd"
-  markTime: string              // "HH:mm:ss"
-  systemMark: string            // ISO datetime
+  markDate: string | null       // "yyyy-MM-dd" — null when system auto-closed
+  markTime: string | null       // "HH:mm:ss"  — null when system auto-closed
+  systemMark: string            // ISO datetime (always present)
   differenceInMinutes?: number  // positive = late, negative = early
   numberOrder: number
   assistanceType: AssistanceType
@@ -117,6 +126,7 @@ export interface GuardCurrentShiftDto {
     dateGuardUnityAssignmentId: number
     date: string
     contractUnity?: ContractUnityInfo
+    specialServiceUnity?: SpecialServiceUnityInfo
     turnTemplate?: TurnTemplateInfo
   }
   /** Today's events sorted by numberOrder ASC */
