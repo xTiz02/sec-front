@@ -38,6 +38,13 @@ const FILTER_FIELDS: DataTableFilterField[] = [
     placeholder: "Buscar por nombre...",
   },
   {
+    id: "code",
+    label: "Código",
+    type: "text",
+    queryKey: "code",
+    placeholder: "Buscar por código...",
+  },
+  {
     id: "licenseNumber",
     label: "N° Licencia",
     type: "text",
@@ -77,6 +84,15 @@ export const GuardPage = () => {
           </div>
         )
       },
+    },
+    {
+      id: "code",
+      accessorKey: "code",
+      header: "Código",
+      enableSorting: true,
+      cell: ({ row }) => (
+        <span className="text-sm font-mono font-medium">{row.original.code}</span>
+      ),
     },
     {
       id: "documentNumber",

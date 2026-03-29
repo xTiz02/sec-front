@@ -22,6 +22,7 @@ export interface GuardDto {
   id: number
   employeeId: number
   employee?: EmployeeDto
+  code: string
   licenseNumber: string
   guardType: GuardType
   photoUrl?: string
@@ -29,6 +30,7 @@ export interface GuardDto {
 
 export interface CreateGuardRequest {
   employeeId: number
+  code: string
   licenseNumber: string
   guardType: GuardType
   photoUrl?: string

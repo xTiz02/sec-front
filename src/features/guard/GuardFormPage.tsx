@@ -43,6 +43,10 @@ const guardSchema = z.object({
     .number({ required_error: "El empleado es requerido" })
     .int()
     .positive("Seleccione un empleado"),
+  code: z
+    .string({ required_error: "El código es requerido" })
+    .min(1, "El código es requerido")
+    .max(50),
   licenseNumber: z
     .string({ required_error: "El número de licencia es requerido" })
     .min(1, "El número de licencia es requerido")
@@ -74,6 +78,7 @@ export const GuardFormPage = () => {
     resolver: zodResolver(guardSchema),
     defaultValues: {
       employeeId: undefined,
+      code: "",
       licenseNumber: "",
       guardType: undefined,
       photoUrl: "",
@@ -84,6 +89,7 @@ export const GuardFormPage = () => {
     if (guard) {
       form.reset({
         employeeId: guard.employeeId,
+        code: guard.code,
         licenseNumber: guard.licenseNumber,
         guardType: guard.guardType,
         photoUrl: guard.photoUrl ?? "",
@@ -163,6 +169,26 @@ export const GuardFormPage = () => {
                         value={field.value}
                         onChange={field.onChange}
                         placeholder="Seleccionar empleado..."
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                {/* Código único */}
+                <Controller
+                  name="code"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="code">Código</FieldLabel>
+                      <Input
+                        id="code"
+                        placeholder="G-001"
+                        {...field}
+                        aria-invalid={fieldState.invalid}
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />

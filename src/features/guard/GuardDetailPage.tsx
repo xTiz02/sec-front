@@ -53,7 +53,7 @@ export const GuardDetailPage = () => {
             </h1>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Licencia: {guard.licenseNumber}
+            Código: <span className="font-mono">{guard.code}</span> · Licencia: {guard.licenseNumber}
           </p>
         </div>
         <Button
@@ -126,6 +126,10 @@ export const GuardDetailPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
+            <div>
+              <p className="text-xs text-muted-foreground">Código</p>
+              <p className="text-sm font-mono font-medium">{guard.code}</p>
+            </div>
             <div>
               <p className="text-xs text-muted-foreground">Número de Licencia</p>
               <p className="text-sm font-mono font-medium">{guard.licenseNumber}</p>

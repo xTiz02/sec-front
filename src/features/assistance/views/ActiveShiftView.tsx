@@ -8,7 +8,7 @@ import {
   Utensils,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { AssistanceType } from "../api/assistanceModel"
+import { AssistanceProblemType, AssistanceType } from "../api/assistanceModel"
 import type {
   GuardAssistanceEventDto,
   GuardRequestDto,
@@ -31,7 +31,6 @@ interface ActiveShiftViewProps {
   breakIsOverdue: boolean
   lateEvents: GuardAssistanceEventDto[]
   lateRequests: GuardRequestDto[]
-  canMark: boolean
   canMarkExit: boolean
   canMarkBreakEnd: boolean
   breakWaitSeconds: number
@@ -52,7 +51,6 @@ export function ActiveShiftView({
   breakIsOverdue,
   lateEvents,
   lateRequests,
-  canMark,
   canMarkExit,
   canMarkBreakEnd,
   breakWaitSeconds,
@@ -77,7 +75,8 @@ export function ActiveShiftView({
             <span>Salida: {fmtTime(turnTemplate.timeTo)}</span>
           </div>
         )}
-        {entryEvent && (
+        {entryEvent && entryEvent.assistanceProblemType === AssistanceProblemType.
+        EARLY && (
           <div className="mt-1 text-[10px] text-slate-400">
             Marcaste a las {fmtTime(eventMarkTime(entryEvent))}
           </div>

@@ -10,7 +10,6 @@ export enum AssistanceType {
 }
 
 export enum AssistanceProblemType {
-  NORMAL = "NORMAL",
   LATE = "LATE",
   LATE_JUSTIFIED = "LATE_JUSTIFIED",
   SYSTEM = "SYSTEM",
@@ -38,7 +37,6 @@ export const AssistanceTypeLabel: Record<AssistanceType, string> = {
 }
 
 export const AssistanceProblemTypeLabel: Record<AssistanceProblemType, string> = {
-  [AssistanceProblemType.NORMAL]: "Normal",
   [AssistanceProblemType.LATE]: "Tardanza",
   [AssistanceProblemType.LATE_JUSTIFIED]: "Tardanza Justificada",
   [AssistanceProblemType.SYSTEM]: "Sistema",

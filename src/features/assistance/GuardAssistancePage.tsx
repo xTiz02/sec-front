@@ -313,7 +313,6 @@ export function GuardAssistancePage() {
             breakIsOverdue={breakIsOverdue}
             lateEvents={lateEvents}
             lateRequests={lateRequests}
-            canMark={canMark}
             canMarkExit={canMarkExit}
             canMarkBreakEnd={canMarkBreakEnd}
             breakWaitSeconds={breakWaitSeconds}
