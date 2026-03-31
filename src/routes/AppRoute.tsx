@@ -23,6 +23,8 @@ import { AssignmentPage } from "@/features/assignment/AssignmentPage";
 import { AssignmentFormPage } from "@/features/assignment/AssignmentFormPage";
 import { AssignmentDetailPage } from "@/features/assignment/AssignmentDetailPage";
 import { MonthlySchedulerPage } from "@/features/scheduling/MonthlySchedulerPage"
+import { ScheduleMonthlyListPage } from "@/features/scheduling/ScheduleMonthlyListPage"
+import { ScheduleMonthlyDetailPage } from "@/features/scheduling/ScheduleMonthlyDetailPage"
 import { ExceptionManagementPage } from "@/features/scheduling/ExceptionManagementPage";
 import { GuardPage } from "@/features/guard/GuardPage";
 import { GuardFormPage } from "@/features/guard/GuardFormPage";
@@ -88,7 +90,9 @@ export const AppRoutes = () => (
           <Route path="contracts" element={<ClientContractsPage />} />
           <Route path="contracts/:id" element={<ClientContractDetailPage />} />
           <Route path="weekly-builder" element={<ContractWeeklyScheduleBuilderPage />} />
-          <Route path="monthly-scheduler" element={<MonthlySchedulerPage />} />
+          <Route path="monthly-scheduler" element={<ScheduleMonthlyListPage />} />
+          <Route path="monthly-scheduler/new" element={<MonthlySchedulerPage />} />
+          <Route path="monthly-scheduler/:id" element={<ScheduleMonthlyDetailPage />} />
           <Route path="exceptions" element={<ExceptionManagementPage />} />
           <Route path="assignments" element={<AssignmentPage />} />
           <Route path="assignments/new" element={<AssignmentFormPage />} />

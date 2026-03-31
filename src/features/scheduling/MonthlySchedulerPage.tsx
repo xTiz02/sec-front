@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Month } from "@/features/assignment/api/assignmentModel";
 import { GuardType } from "@/features/guard/api/guardModel";
 import type { GuardDto } from "@/features/guard/api/guardModel";
@@ -26,6 +27,7 @@ import { useGetContractSchedulesByContractIdQuery } from "@/features/contractSch
 import { SchedulerFilters } from "./components/SchedulerFilters";
 import { MonthCalendar } from "./components/MonthCalendar";
 import { DayDetailPanel } from "./components/DayDetailPanel";
+import { ImportScheduleDialog } from "./components/ImportScheduleDialog";
 import { Loader2, CalendarDays } from "lucide-react";
 import { INDEX_TO_MONTH } from "./api/monthlySchedulerModel";
 
@@ -42,12 +44,28 @@ function currentYear(): number {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function MonthlySchedulerPage() {
-  // ── Filter state ─────────────────────────────────────────────────────────
-  const [contractId, setContractId] = useState<number | undefined>();
-  const [contractUnityId, setContractUnityId] = useState<number | undefined>();
-  const [month, setMonth] = useState<Month>(currentMonth());
-  const [year, setYear] = useState<number>(currentYear());
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  // ── Edit mode: URL params are pre-filled (coming from detail page) ─────────
+  const isEditMode =
+    searchParams.get("contractId") != null && searchParams.get("contractUnityId") != null
+
+  // ── Filter state (pre-fill from URL params when coming from detail/edit) ──
+  const [contractId, setContractId] = useState<number | undefined>(
+    searchParams.get("contractId") ? Number(searchParams.get("contractId")) : undefined,
+  )
+  const [contractUnityId, setContractUnityId] = useState<number | undefined>(
+    searchParams.get("contractUnityId") ? Number(searchParams.get("contractUnityId")) : undefined,
+  )
+  const [month, setMonth] = useState<Month>(
+    (searchParams.get("month") as Month) ?? currentMonth(),
+  )
+  const [year, setYear] = useState<number>(
+    searchParams.get("year") ? Number(searchParams.get("year")) : currentYear(),
+  )
   const [selectedDate, setSelectedDate] = useState<string | undefined>();
+  const [importOpen, setImportOpen] = useState(false)
 
   // ── Schedule monthly check ────────────────────────────────────────────────
   const { data: scheduleMonthly, isLoading: isLoadingSchedule } =
@@ -438,11 +456,13 @@ export function MonthlySchedulerPage() {
           totalGuards={guardSchedules.length}
           uncoveredTurns={uncoveredTurns}
           isGenerating={isGenerating}
+          isEditMode={isEditMode}
           onContractChange={handleContractChange}
           onContractUnityChange={handleContractUnityChange}
           onMonthChange={handleMonthChange}
           onYearChange={handleYearChange}
           onGenerate={handleGenerate}
+          onImportExcel={() => setImportOpen(true)}
         />
 
         {/* Calendar area */}
@@ -509,6 +529,12 @@ export function MonthlySchedulerPage() {
           onRemoveVacation={handleRemoveVacation}
         />
       )}
+
+      <ImportScheduleDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onSuccess={id => navigate(`/modules/scheduling/monthly-scheduler/${id}`)}
+      />
     </div>
   );
 }

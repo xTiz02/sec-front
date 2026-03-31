@@ -68,6 +68,7 @@ export interface ClientContractDto {
   clientId: number
   clientName?: string
   clientCode?: string
+  contractCode?: string
   name: string
   description?: string
   active: boolean
@@ -77,6 +78,7 @@ export interface ClientContractDto {
 
 export interface CreateClientContractRequest {
   clientId: number
+  code: string
   name: string
   description?: string
   active: boolean

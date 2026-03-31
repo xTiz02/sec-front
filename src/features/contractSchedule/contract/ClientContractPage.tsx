@@ -50,6 +50,13 @@ const FILTER_FIELDS: DataTableFilterField[] = [
     placeholder: "Buscar contrato...",
   },
   {
+    id: "contractCode",
+    label: "Código",
+    type: "text",
+    queryKey: "code",
+    placeholder: "Buscar por código...",
+  },
+  {
     id: "clientName",
     label: "Cliente",
     type: "text",
@@ -110,6 +117,15 @@ export const ClientContractsPage = () => {
           <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="font-medium">{row.original.name}</span>
         </div>
+      ),
+    },
+    {
+      id: "contractCode",
+      accessorKey: "contractCode",
+      header: "Código",
+      enableSorting: true,
+      cell: ({ row }) => (
+        <span className="text-sm font-mono font-medium">{row.original.contractCode ?? "—"}</span>
       ),
     },
     {

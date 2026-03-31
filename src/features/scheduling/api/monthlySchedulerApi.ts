@@ -1,5 +1,6 @@
 import { baseApi } from "@/app/baseApi"
 import type { ScheduleMonthlyDto, Month } from "@/features/assignment/api/assignmentModel"
+import type { PageResponse } from "@/features/securiiy/api/securityModel"
 import type {
   GuardUnityScheduleAssignmentDto,
   DateGuardUnityAssignmentDto,
@@ -11,9 +12,67 @@ import type {
   CreateVacationAssignmentRequest,
 } from "./monthlySchedulerModel"
 
+export interface ScheduleMonthlyListParams {
+  page?: number
+  size?: number
+  name?: string
+  month?: Month
+  year?: number
+}
+
+// ─── Excel import types ───────────────────────────────────────────────────────
+
+export type ScheduleExcelValidationSuccess = {
+  yearMonth: string
+  totalDays: number
+  cliente: string
+  unidades: number
+  filasExcel: number
+}
+
+export type ScheduleExcelValidationError = {
+  position: string
+  description: string
+}
+
+export type ScheduleExcelValidationResult =
+  | ScheduleExcelValidationSuccess
+  | ScheduleExcelValidationError
+
+export interface ImportScheduleExcelResult {
+  scheduleMonthlyId: number
+}
+
 export const monthlySchedulerApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     // ── ScheduleMonthly ────────────────────────────────────────────────────
+
+    /** Paginated list of all ScheduleMonthly records */
+    getScheduleMonthlys: builder.query<PageResponse<ScheduleMonthlyDto>, ScheduleMonthlyListParams>({
+      query: ({ page = 0, size = 10, name, month, year }) => ({
+        url: `/schedule-monthly`,
+        params: {
+          page,
+          size,
+          ...(name ? { name } : {}),
+          ...(month ? { month } : {}),
+          ...(year ? { year } : {}),
+        },
+      }),
+      providesTags: result =>
+        result
+          ? [
+              ...result.content.map(s => ({ type: "MonthSchedule" as const, id: s.id })),
+              { type: "MonthSchedule", id: "LIST" },
+            ]
+          : [{ type: "MonthSchedule", id: "LIST" }],
+    }),
+
+    /** Get a single ScheduleMonthly by id */
+    getScheduleMonthlyById: builder.query<ScheduleMonthlyDto, number>({
+      query: id => `/schedule-monthly/${id}`,
+      providesTags: (_r, _e, id) => [{ type: "MonthSchedule", id }],
+    }),
 
     /** Get a ScheduleMonthly by month + year (null if not found) */
     getScheduleMonthlyByPeriod: builder.query<
@@ -27,12 +86,65 @@ export const monthlySchedulerApi = baseApi.injectEndpoints({
       providesTags: [{ type: "MonthSchedule", id: "PERIOD" }],
     }),
 
+    /** All GuardUnityScheduleAssignments for a given scheduleMonthly (all contract unities) */
+    getGuardUnitySchedulesByScheduleMonthly: builder.query<
+      GuardUnityScheduleAssignmentDto[],
+      number
+    >({
+      query: scheduleMonthlyId => ({
+        url: `/guard-unity-schedule/by-schedule-monthly`,
+        params: { scheduleMonthlyId },
+      }),
+      providesTags: result =>
+        result
+          ? [
+              ...result.map(g => ({ type: "GuardUnitySchedule" as const, id: g.id })),
+              { type: "GuardUnitySchedule", id: "LIST" },
+            ]
+          : [{ type: "GuardUnitySchedule", id: "LIST" }],
+    }),
+
     // ── Generate monthly schedule (creates ScheduleMonthly + all assignments) ──
 
     generateMonthSchedule: builder.mutation<ScheduleMonthlyDto, GenerateMonthScheduleRequest>({
       query: body => ({ url: `/schedule-monthly/generate-month`, method: "POST", body }),
       invalidatesTags: [
         { type: "MonthSchedule", id: "PERIOD" },
+        { type: "MonthSchedule", id: "LIST" },
+        { type: "GuardUnitySchedule", id: "LIST" },
+        { type: "DailyAssignment", id: "LIST" },
+      ],
+    }),
+
+    // ── Excel import ───────────────────────────────────────────────────────
+
+    /** Validate an Excel schedule file — returns preview info or validation error */
+    validateScheduleExcel: builder.mutation<ScheduleExcelValidationResult, File>({
+      query: file => {
+        const formData = new FormData()
+        formData.append("file", file)
+        return {
+          url: `/storage/schedule/upload-file/validate`,
+          method: "POST",
+          body: formData,
+        }
+      },
+    }),
+
+    /** Process and import a validated Excel schedule file.
+     *  TODO: confirm the exact endpoint URL with the backend team.
+     *  Returns { scheduleMonthlyId } on success. */
+    importScheduleExcel: builder.mutation<ImportScheduleExcelResult, File>({
+      query: file => {
+        const formData = new FormData()
+        formData.append("file", file)
+        return {
+          url: `/storage/schedule/upload-file/create`,
+          method: "POST",
+          body: formData,
+        }
+      },
+      invalidatesTags: [
         { type: "MonthSchedule", id: "LIST" },
         { type: "GuardUnitySchedule", id: "LIST" },
         { type: "DailyAssignment", id: "LIST" },
@@ -171,8 +283,13 @@ export const monthlySchedulerApi = baseApi.injectEndpoints({
 })
 
 export const {
+  useGetScheduleMonthlysQuery,
+  useGetScheduleMonthlyByIdQuery,
   useGetScheduleMonthlyByPeriodQuery,
+  useGetGuardUnitySchedulesByScheduleMonthlyQuery,
   useGenerateMonthScheduleMutation,
+  useValidateScheduleExcelMutation,
+  useImportScheduleExcelMutation,
   useGetGuardUnityScheduleAssignmentsQuery,
   useUpdateGuardUnityScheduleAssignmentMutation,
   useGetCalendarAssignmentsQuery,

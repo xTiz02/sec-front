@@ -31,16 +31,20 @@ import { Switch } from "@/components/ui/switch"
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
 const clientContractSchema = z.object({
-  clientId: z.coerce
-    .number({ required_error: "El cliente es requerido" })
+  clientId: z
+    .number({ required_error: "El cliente es requerido", invalid_type_error: "Selecciona un cliente" })
     .int()
     .positive("Selecciona un cliente"),
+  code: z
+    .string({ required_error: "El código es requerido" })
+    .min(1, "El código es requerido")
+    .max(50),
   name: z
     .string({ required_error: "El nombre es requerido" })
     .min(3, "Mínimo 3 caracteres")
     .max(150),
   description: z.string().max(255).optional().or(z.literal("")),
-  active: z.boolean().default(true),
+  active: z.boolean(),
 })
 
 type ClientContractFormValues = z.infer<typeof clientContractSchema>
@@ -66,19 +70,20 @@ const ClientContractFormDialog = ({
 
   const form = useForm<ClientContractFormValues>({
     resolver: zodResolver(clientContractSchema),
-    defaultValues: { clientId: undefined, name: "", description: "", active: true },
+    defaultValues: { clientId: undefined, code: "", name: "", description: "", active: true },
   })
 
   useEffect(() => {
     if (editContract) {
       form.reset({
         clientId: editContract.clientId,
+        code: editContract.contractCode ?? "",
         name: editContract.name,
         description: editContract.description ?? "",
         active: editContract.active,
       })
     } else {
-      form.reset({ clientId: undefined, name: "", description: "", active: true })
+      form.reset({ clientId: undefined, code: "", name: "", description: "", active: true })
     }
   }, [editContract, open])
 
@@ -91,7 +96,7 @@ const ClientContractFormDialog = ({
       if (isEdit) {
         await updateClientContract({ id: editContract!.id, body: payload }).unwrap()
       } else {
-        await createClientContract(payload as any).unwrap()
+        await createClientContract(payload).unwrap()
       }
       onClose()
     } catch (err) {
@@ -131,14 +136,14 @@ const ClientContractFormDialog = ({
           />
           <div className="grid grid-cols-2 gap-4">
             <Controller
-              name="name"
+              name="code"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="col-span-2">
-                  <FieldLabel htmlFor="name">Nombre del Contrato</FieldLabel>
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="code">Código</FieldLabel>
                   <Input
-                    id="name"
-                    placeholder="Contrato 2024"
+                    id="code"
+                    placeholder="CC-001"
                     {...field}
                     aria-invalid={fieldState.invalid}
                   />
@@ -158,6 +163,22 @@ const ClientContractFormDialog = ({
                     id="active"
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="col-span-2">
+                  <FieldLabel htmlFor="name">Nombre del Contrato</FieldLabel>
+                  <Input
+                    id="name"
+                    placeholder="Contrato 2024"
+                    {...field}
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

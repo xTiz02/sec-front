@@ -1,4 +1,4 @@
-import { CalendarCheck, Loader2, Plus, RefreshCw } from "lucide-react"
+import { CalendarCheck, FileSpreadsheet, Loader2, Plus, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -41,11 +41,13 @@ interface SchedulerFiltersProps {
   totalGuards: number
   uncoveredTurns: number
   isGenerating: boolean
+  isEditMode: boolean
   onContractChange: (id: number | undefined) => void
   onContractUnityChange: (id: number | undefined) => void
   onMonthChange: (m: Month) => void
   onYearChange: (y: number) => void
   onGenerate: (name: string, description?: string) => void
+  onImportExcel?: () => void
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -60,11 +62,13 @@ export function SchedulerFilters({
   totalGuards,
   uncoveredTurns,
   isGenerating,
+  isEditMode,
   onContractChange,
   onContractUnityChange,
   onMonthChange,
   onYearChange,
   onGenerate,
+  onImportExcel,
 }: SchedulerFiltersProps) {
   const [generateOpen, setGenerateOpen] = useState(false)
   const [scheduleName, setScheduleName] = useState("")
@@ -139,6 +143,7 @@ export function SchedulerFilters({
               value={contractId}
               onChange={onContractChange}
               placeholder="Buscar contrato..."
+              disabled={isEditMode}
             />
           </div>
 
@@ -152,7 +157,7 @@ export function SchedulerFilters({
               value={contractUnityId}
               onChange={onContractUnityChange}
               placeholder="Seleccionar unidad..."
-              disabled={contractId == null}
+              disabled={isEditMode || contractId == null}
             />
           </div>
 
@@ -167,6 +172,7 @@ export function SchedulerFilters({
                 <Select
                   value={month}
                   onValueChange={v => onMonthChange(v as Month)}
+                  disabled={isEditMode}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -185,6 +191,7 @@ export function SchedulerFilters({
                 <Select
                   value={String(year)}
                   onValueChange={v => onYearChange(Number(v))}
+                  disabled={isEditMode}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -222,10 +229,20 @@ export function SchedulerFilters({
             )}
           </div>
 
-          {/* Generate button */}
-          <div className="md:col-span-2 flex items-end">
+          {/* Action buttons */}
+          <div className="md:col-span-2 flex items-end gap-2">
+            {!isEditMode && onImportExcel && (
+              <Button
+                variant="outline"
+                disabled={isGenerating}
+                onClick={onImportExcel}
+                title="Importar desde Excel"
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+              </Button>
+            )}
             <Button
-              className="w-full"
+              className="flex-1"
               disabled={!canGenerate || isGenerating}
               onClick={handleOpenGenerate}
             >
