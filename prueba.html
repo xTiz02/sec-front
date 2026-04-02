@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mapa con marcadores</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 500px; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  // Crear mapa centrado en Lima
+  var map = L.map('map').setView([-12.0464, -77.0428], 13);
+
+  // Cargar tiles de OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  // Agregar marcador
+  var marker = L.marker([-12.0464, -77.0428]).addTo(map);
+
+
+marker.on('click', function() {
+  alert("Hiciste click en el marcador");
+});
+
+marker.on('dragend', function(e) {
+  console.log("Nueva posición:", e.target.getLatLng());
+});
+
+  marker.bindPopup("<b>Mi ubicación</b><br>Descripción aquí").openPopup();
+</script>
+
+</body>
+</html>

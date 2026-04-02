@@ -145,6 +145,7 @@ export const UsersPage: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="">
+              <TableHead>ID</TableHead>
               <TableHead>Empleado</TableHead>
               <TableHead>Usuario</TableHead>
               <TableHead>Perfil de Seguridad</TableHead>
@@ -166,6 +167,9 @@ export const UsersPage: React.FC = () => {
                 ))
               : data?.content.map((user) => (
                   <TableRow key={user.id} className="">
+                    <TableCell className="font-mono text-sm ">
+                      {user.id}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
