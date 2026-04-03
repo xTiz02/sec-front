@@ -24,6 +24,7 @@ import {
   UserCheck,
   FileBarChart2,
   Star,
+  ClipboardClock,
 } from "lucide-react"
 
 
@@ -40,7 +41,12 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Dashboard",
     icon: <LayoutDashboard size={18} />,
-    path: "/modules/dashboard",
+    path: "/modules/monitoring",
+  },
+    {
+    label: "Turnos",
+    icon: <ClipboardClock size={18} />,
+    path: "/modules/monitoring/shifts",
   },
   {
     label: "Personal",

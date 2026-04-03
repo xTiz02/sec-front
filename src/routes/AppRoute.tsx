@@ -39,7 +39,9 @@ import { SpecialServiceSchedulePage } from "@/features/specialService/schedule/S
 import { SpecialServiceScheduleFormPage } from "@/features/specialService/schedule/SpecialServiceScheduleFormPage";
 import { SpecialServiceScheduleDetailPage } from "@/features/specialService/schedule/SpecialServiceScheduleDetailPage";
 import { SpecialServiceExceptionPage } from "@/features/specialService/schedule/SpecialServiceExceptionPage";
-import { GuardAssistancePage } from "@/features/assistance/GuardAssistancePage";
+import { GuardAssistancePage } from "@/features/assistance/GuardAssistancePage"
+import { MonitoringPage } from "@/features/monitoring/MonitoringPage"
+import { ShiftSearchPage } from "@/features/shiftSearch/ShiftSearchPage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -114,6 +116,10 @@ export const AppRoutes = () => (
 
         {/* Attendance (Guard mobile view) */}
         <Route path="attendance" element={<GuardAssistancePage />} />
+
+        {/* Monitoring */}
+        <Route path="monitoring" element={<MonitoringPage />} />
+        <Route path="monitoring/shifts" element={<ShiftSearchPage />} />
 
         {/* Security */}
         <Route path="security">

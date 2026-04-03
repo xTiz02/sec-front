@@ -31,6 +31,7 @@ const TAG_TYPES = [
   "SpecialServiceUnity",
   "SpecialServiceSchedule",
   "GuardAssistance",
+  "UnitMonitoring",
 ]
 
 export const baseApi = createApi({

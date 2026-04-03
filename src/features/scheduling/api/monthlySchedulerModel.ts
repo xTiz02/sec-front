@@ -22,6 +22,7 @@ export enum ScheduleAssignmentType {
   EXCEPTIONAL = "EXCEPTIONAL",
   FREE_DAY = "FREE_DAY",
   VACATIONAL = "VACATIONAL",
+  ABSENT = "ABSENT",
 }
 
 export const ScheduleAssignmentTypeLabel: Record<ScheduleAssignmentType, string> = {
@@ -30,6 +31,7 @@ export const ScheduleAssignmentTypeLabel: Record<ScheduleAssignmentType, string>
   [ScheduleAssignmentType.EXCEPTIONAL]: "Excepcional",
   [ScheduleAssignmentType.FREE_DAY]: "Día Libre",
   [ScheduleAssignmentType.VACATIONAL]: "Vacaciones",
+  [ScheduleAssignmentType.ABSENT]: "Ausente",
 }
 
 // ─── WeekOfMonth ──────────────────────────────────────────────────────────────
