@@ -5,6 +5,7 @@ import type {
   UnityLiteView,
   ShiftSearchParams,
   ShiftSearchResultDto,
+  ShiftDetailDto,
 } from "./shiftSearchModel"
 
 export const shiftSearchApi = baseApi.injectEndpoints({
@@ -39,6 +40,12 @@ export const shiftSearchApi = baseApi.injectEndpoints({
       }),
       providesTags: [{ type: "DailyAssignment", id: "SEARCH" }],
     }),
+
+    /** Full detail of a single DateGuardUnityAssignment */
+    getShiftDetail: builder.query<ShiftDetailDto, number>({
+      query: id => `/date-guard-unity-assignment/${id}/detail`,
+      providesTags: (_r, _e, id) => [{ type: "DailyAssignment", id }],
+    }),
   }),
   overrideExisting: false,
 })
@@ -47,4 +54,5 @@ export const {
   useSearchGuardLiteQuery,
   useSearchUnityLiteQuery,
   useSearchShiftsQuery,
+  useGetShiftDetailQuery,
 } = shiftSearchApi

@@ -41,7 +41,8 @@ import { SpecialServiceScheduleDetailPage } from "@/features/specialService/sche
 import { SpecialServiceExceptionPage } from "@/features/specialService/schedule/SpecialServiceExceptionPage";
 import { GuardAssistancePage } from "@/features/assistance/GuardAssistancePage"
 import { MonitoringPage } from "@/features/monitoring/MonitoringPage"
-import { ShiftSearchPage } from "@/features/shiftSearch/ShiftSearchPage";
+import { ShiftSearchPage } from "@/features/shiftSearch/ShiftSearchPage"
+import { ShiftDetailPage } from "@/features/shiftSearch/ShiftDetailPage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -120,6 +121,7 @@ export const AppRoutes = () => (
         {/* Monitoring */}
         <Route path="monitoring" element={<MonitoringPage />} />
         <Route path="monitoring/shifts" element={<ShiftSearchPage />} />
+        <Route path="monitoring/shifts/:id" element={<ShiftDetailPage />} />
 
         {/* Security */}
         <Route path="security">

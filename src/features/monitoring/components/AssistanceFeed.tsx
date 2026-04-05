@@ -1,13 +1,14 @@
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   AssistanceTypeLabel,
   AssistanceProblemTypeLabel,
   AssistanceType,
   AssistanceProblemType,
-} from "@/features/assistance/api/assistanceModel"
-import { MapPin, MapPinOff, Eye } from "lucide-react"
-import type { LiveAssistanceEventDto } from "../api/monitoringModel"
+} from "@/features/assistance/api/assistanceModel";
+import { MapPin, MapPinOff, Eye } from "lucide-react";
+import type { LiveAssistanceEventDto } from "../api/monitoringModel";
+import { useNavigate } from "react-router-dom";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -17,30 +18,30 @@ function assistanceTypeBadge(type: AssistanceType) {
     [AssistanceType.EXIT]: "border-slate-400 text-slate-600 bg-slate-50",
     [AssistanceType.BREAK_START]: "border-amber-400 text-amber-700 bg-amber-50",
     [AssistanceType.BREAK_END]: "border-blue-400 text-blue-700 bg-blue-50",
-  }
-  return variants[type] ?? ""
+  };
+  return variants[type] ?? "";
 }
 
 function problemBadge(type?: AssistanceProblemType) {
-  if (!type) return null
+  if (!type) return null;
   const variants: Record<AssistanceProblemType, string> = {
     [AssistanceProblemType.LATE]: "border-red-400 text-red-700",
     [AssistanceProblemType.LATE_JUSTIFIED]: "border-amber-400 text-amber-700",
     [AssistanceProblemType.SYSTEM]: "border-slate-400 text-slate-600",
     [AssistanceProblemType.EARLY]: "border-blue-400 text-blue-700",
-  }
+  };
   return (
     <Badge variant="outline" className={`text-[9px] ${variants[type]}`}>
       {AssistanceProblemTypeLabel[type]}
     </Badge>
-  )
+  );
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface AssistanceFeedProps {
-  events: LiveAssistanceEventDto[]
-  isLoading?: boolean
+  events: LiveAssistanceEventDto[];
+  isLoading?: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -51,7 +52,7 @@ export function AssistanceFeed({ events, isLoading }: AssistanceFeedProps) {
       <div className="py-8 text-center text-sm text-muted-foreground">
         Cargando marcaciones...
       </div>
-    )
+    );
   }
 
   if (events.length === 0) {
@@ -59,7 +60,7 @@ export function AssistanceFeed({ events, isLoading }: AssistanceFeedProps) {
       <div className="py-8 text-center text-sm text-muted-foreground">
         Sin marcaciones aún para hoy. Conectado al WebSocket...
       </div>
-    )
+    );
   }
 
   return (
@@ -91,20 +92,20 @@ export function AssistanceFeed({ events, isLoading }: AssistanceFeedProps) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40">
-          {events.map(event => (
+          {events.map((event) => (
             <FeedRow key={event.id} event={event} />
           ))}
         </tbody>
       </table>
     </div>
-  )
+  );
 }
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
 function FeedRow({ event }: { event: LiveAssistanceEventDto }) {
-  const hasGps = event.latitude != null && event.longitude != null
-
+  const hasGps = event.latitude != null && event.longitude != null;
+  const navigate = useNavigate();
   return (
     <tr className="hover:bg-muted/30 transition-colors group">
       <td className="px-5 py-3.5">
@@ -126,7 +127,9 @@ function FeedRow({ event }: { event: LiveAssistanceEventDto }) {
         >
           {AssistanceTypeLabel[event.assistanceType]}
         </Badge>
-        <p className="text-[10px] text-muted-foreground mt-0.5">#{event.numberOrder}</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5">
+          #{event.numberOrder}
+        </p>
       </td>
 
       <td className="px-5 py-3.5">
@@ -168,12 +171,18 @@ function FeedRow({ event }: { event: LiveAssistanceEventDto }) {
           variant="ghost"
           size="icon"
           className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-          disabled
-          title="Vista de detalle de asistencia — próximamente"
+          // disabled
+          title="Vista de detalle de asistencia"
+          onClick={() =>
+            window.open(
+              `/modules/monitoring/shifts/${event.dateGuardUnityAssignmentId}`,
+              "_blank",
+            )
+          }
         >
           <Eye className="h-3.5 w-3.5" />
         </Button>
       </td>
     </tr>
-  )
+  );
 }

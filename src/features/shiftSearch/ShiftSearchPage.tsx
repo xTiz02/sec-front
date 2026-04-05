@@ -1,18 +1,19 @@
-import { useState } from "react"
-import { differenceInDays, format, parseISO } from "date-fns"
-import { es } from "date-fns/locale"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { differenceInDays, format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   AlertTriangle,
   ChevronLeft,
@@ -23,30 +24,34 @@ import {
   RotateCcw,
   Search,
   ShieldCheck,
-} from "lucide-react"
+} from "lucide-react";
 import {
   ScheduleAssignmentType,
   ScheduleAssignmentTypeLabel,
-} from "@/features/scheduling/api/monthlySchedulerModel"
-import { ClientSelector } from "@/components/select/ClientSelector"
-import { GuardSearchSelector } from "./components/GuardSearchSelector"
-import { UnitySearchSelector } from "./components/UnitySearchSelector"
-import { useSearchShiftsQuery } from "./api/shiftSearchApi"
-import type { GuardLiteView, UnityLiteView, ShiftSearchResultDto } from "./api/shiftSearchModel"
+} from "@/features/scheduling/api/monthlySchedulerModel";
+import { ClientSelector } from "@/components/select/ClientSelector";
+import { GuardSearchSelector } from "./components/GuardSearchSelector";
+import { UnitySearchSelector } from "./components/UnitySearchSelector";
+import { useSearchShiftsQuery } from "./api/shiftSearchApi";
+import type {
+  GuardLiteView,
+  UnityLiteView,
+  ShiftSearchResultDto,
+} from "./api/shiftSearchModel";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 10;
 
 function fmt(t?: string) {
-  return t ?? <span className="text-muted-foreground/40 text-xs">—</span>
+  return t ?? <span className="text-muted-foreground/40 text-xs">—</span>;
 }
 
 function dateLabel(d: string) {
   try {
-    return format(parseISO(d), "d MMM yyyy", { locale: es })
+    return format(parseISO(d), "d MMM yyyy", { locale: es });
   } catch {
-    return d
+    return d;
   }
 }
 
@@ -58,30 +63,33 @@ function assignmentTypeBadge(type: ScheduleAssignmentType) {
     [ScheduleAssignmentType.FREE_DAY]: "border-blue-400 text-blue-700",
     [ScheduleAssignmentType.VACATIONAL]: "border-cyan-400 text-cyan-700",
     [ScheduleAssignmentType.ABSENT]: "border-red-400 text-red-700",
-  }
+  };
   return (
-    <Badge variant="outline" className={`text-[10px] font-bold ${map[type] ?? ""}`}>
+    <Badge
+      variant="outline"
+      className={`text-[10px] font-bold ${map[type] ?? ""}`}
+    >
       {ScheduleAssignmentTypeLabel[type]}
     </Badge>
-  )
+  );
 }
 
 // ─── Filter state type ────────────────────────────────────────────────────────
 
 interface FilterState {
-  dateFrom: string
-  dateTo: string
-  clientId?: number
-  guard?: GuardLiteView | null
-  unity?: UnityLiteView | null
-  scheduleAssignmentType?: ScheduleAssignmentType
-  hasExceptions: boolean
-  hasExtraHours: boolean
-  hasMarks: boolean
+  dateFrom: string;
+  dateTo: string;
+  clientId?: number;
+  guard?: GuardLiteView | null;
+  unity?: UnityLiteView | null;
+  scheduleAssignmentType?: ScheduleAssignmentType;
+  hasExceptions: boolean;
+  hasExtraHours: boolean;
+  hasMarks: boolean;
 }
 
 function emptyFilters(): FilterState {
-  const today = format(new Date(), "yyyy-MM-dd")
+  const today = format(new Date(), "yyyy-MM-dd");
   return {
     dateFrom: today,
     dateTo: today,
@@ -92,16 +100,19 @@ function emptyFilters(): FilterState {
     hasExceptions: false,
     hasExtraHours: false,
     hasMarks: false,
-  }
+  };
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ShiftSearchPage() {
-  const [filters, setFilters] = useState<FilterState>(emptyFilters)
-  const [submittedFilters, setSubmittedFilters] = useState<FilterState | null>(null)
-  const [page, setPage] = useState(0)
-  const [dateError, setDateError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState<FilterState>(emptyFilters);
+  const [submittedFilters, setSubmittedFilters] = useState<FilterState | null>(
+    null,
+  );
+  const [page, setPage] = useState(0);
+  const [dateError, setDateError] = useState<string | null>(null);
 
   // Build query params from submitted filters
   const queryParams = submittedFilters
@@ -112,70 +123,72 @@ export function ShiftSearchPage() {
         guardId: submittedFilters.guard?.guardId ?? undefined,
         externalGuardId: submittedFilters.guard?.externalGuardId ?? undefined,
         unityId: submittedFilters.unity?.unityId ?? undefined,
-        specialServiceUnityId: submittedFilters.unity?.specialServiceUnityId ?? undefined,
-        scheduleAssignmentType: submittedFilters.scheduleAssignmentType ?? undefined,
+        specialServiceUnityId:
+          submittedFilters.unity?.specialServiceUnityId ?? undefined,
+        scheduleAssignmentType:
+          submittedFilters.scheduleAssignmentType ?? undefined,
         hasExceptions: submittedFilters.hasExceptions || undefined,
         hasExtraHours: submittedFilters.hasExtraHours || undefined,
         hasMarks: submittedFilters.hasMarks || undefined,
         page,
         size: PAGE_SIZE,
       }
-    : null
+    : null;
 
   const { data, isLoading, isFetching } = useSearchShiftsQuery(queryParams!, {
     skip: queryParams === null,
-  })
+  });
 
-  const totalPages = data?.totalPages ?? 0
-  const totalElements = data?.totalElements ?? 0
+  const totalPages = data?.totalPages ?? 0;
+  const totalElements = data?.totalElements ?? 0;
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
   const validateDates = (from: string, to: string): boolean => {
     if (!from || !to) {
-      setDateError("Ingresa el rango de fechas")
-      return false
+      setDateError("Ingresa el rango de fechas");
+      return false;
     }
     if (from > to) {
-      setDateError("La fecha de inicio no puede ser posterior a la de fin")
-      return false
+      setDateError("La fecha de inicio no puede ser posterior a la de fin");
+      return false;
     }
-    const diff = differenceInDays(parseISO(to), parseISO(from))
+    const diff = differenceInDays(parseISO(to), parseISO(from));
     if (diff > 6) {
-      setDateError("El rango máximo es de 7 días")
-      return false
+      setDateError("El rango máximo es de 7 días");
+      return false;
     }
-    setDateError(null)
-    return true
-  }
+    setDateError(null);
+    return true;
+  };
 
   const handleDateFromChange = (val: string) => {
-    setFilters(f => ({ ...f, dateFrom: val }))
-    if (val && filters.dateTo) validateDates(val, filters.dateTo)
-  }
+    setFilters((f) => ({ ...f, dateFrom: val }));
+    if (val && filters.dateTo) validateDates(val, filters.dateTo);
+  };
 
   const handleDateToChange = (val: string) => {
-    setFilters(f => ({ ...f, dateTo: val }))
-    if (filters.dateFrom && val) validateDates(filters.dateFrom, val)
-  }
+    setFilters((f) => ({ ...f, dateTo: val }));
+    if (filters.dateFrom && val) validateDates(filters.dateFrom, val);
+  };
 
   const handleSearch = () => {
-    if (!validateDates(filters.dateFrom, filters.dateTo)) return
-    setSubmittedFilters({ ...filters })
-    setPage(0)
-  }
+    if (!validateDates(filters.dateFrom, filters.dateTo)) return;
+    setSubmittedFilters({ ...filters });
+    setPage(0);
+  };
 
   const handleClear = () => {
-    setFilters(emptyFilters())
-    setSubmittedFilters(null)
-    setDateError(null)
-    setPage(0)
-  }
+    setFilters(emptyFilters());
+    setSubmittedFilters(null);
+    setDateError(null);
+    setPage(0);
+  };
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -186,7 +199,9 @@ export function ShiftSearchPage() {
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
           Operaciones · Registro de Asistencia
         </p>
-        <h1 className="text-2xl font-extrabold tracking-tight">Búsqueda General de Turnos</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight">
+          Búsqueda General de Turnos
+        </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
           Filtra y audita los turnos programados con sus marcaciones reales.
         </p>
@@ -211,7 +226,7 @@ export function ShiftSearchPage() {
             <Input
               type="date"
               value={filters.dateFrom}
-              onChange={e => handleDateFromChange(e.target.value)}
+              onChange={(e) => handleDateFromChange(e.target.value)}
               className="h-9 text-sm"
             />
           </div>
@@ -222,7 +237,7 @@ export function ShiftSearchPage() {
             <Input
               type="date"
               value={filters.dateTo}
-              onChange={e => handleDateToChange(e.target.value)}
+              onChange={(e) => handleDateToChange(e.target.value)}
               className="h-9 text-sm"
             />
           </div>
@@ -234,7 +249,7 @@ export function ShiftSearchPage() {
             </label>
             <ClientSelector
               value={filters.clientId}
-              onChange={v => setFilters(f => ({ ...f, clientId: v }))}
+              onChange={(v) => setFilters((f) => ({ ...f, clientId: v }))}
               placeholder="Buscar cliente..."
               className="h-9"
             />
@@ -247,7 +262,7 @@ export function ShiftSearchPage() {
             </label>
             <GuardSearchSelector
               value={filters.guard}
-              onChange={v => setFilters(f => ({ ...f, guard: v }))}
+              onChange={(v) => setFilters((f) => ({ ...f, guard: v }))}
             />
           </div>
 
@@ -258,7 +273,7 @@ export function ShiftSearchPage() {
             </label>
             <UnitySearchSelector
               value={filters.unity}
-              onChange={v => setFilters(f => ({ ...f, unity: v }))}
+              onChange={(v) => setFilters((f) => ({ ...f, unity: v }))}
             />
           </div>
         </div>
@@ -272,8 +287,8 @@ export function ShiftSearchPage() {
             </label>
             <Select
               value={filters.scheduleAssignmentType ?? "__all__"}
-              onValueChange={v =>
-                setFilters(f => ({
+              onValueChange={(v) =>
+                setFilters((f) => ({
                   ...f,
                   scheduleAssignmentType:
                     v === "__all__" ? undefined : (v as ScheduleAssignmentType),
@@ -285,7 +300,7 @@ export function ShiftSearchPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todos los tipos</SelectItem>
-                {Object.values(ScheduleAssignmentType).map(t => (
+                {Object.values(ScheduleAssignmentType).map((t) => (
                   <SelectItem key={t} value={t}>
                     {ScheduleAssignmentTypeLabel[t]}
                   </SelectItem>
@@ -310,11 +325,14 @@ export function ShiftSearchPage() {
                 <Checkbox
                   id={key}
                   checked={filters[key]}
-                  onCheckedChange={c =>
-                    setFilters(f => ({ ...f, [key]: c === true }))
+                  onCheckedChange={(c) =>
+                    setFilters((f) => ({ ...f, [key]: c === true }))
                   }
                 />
-                <Label htmlFor={key} className="text-sm font-medium cursor-pointer">
+                <Label
+                  htmlFor={key}
+                  className="text-sm font-medium cursor-pointer"
+                >
                   {label}
                 </Label>
               </div>
@@ -323,7 +341,12 @@ export function ShiftSearchPage() {
 
           {/* Action buttons */}
           <div className="flex gap-2 ml-auto">
-            <Button variant="outline" size="sm" onClick={handleClear} className="gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClear}
+              className="gap-1.5"
+            >
               <RotateCcw className="h-3.5 w-3.5" />
               Limpiar
             </Button>
@@ -382,7 +405,7 @@ export function ShiftSearchPage() {
                     "Fin Almuerzo",
                     "Salida",
                     "",
-                  ].map(h => (
+                  ].map((h) => (
                     <th
                       key={h}
                       className="px-5 py-3 text-[10px] font-black uppercase tracking-wider text-muted-foreground"
@@ -411,8 +434,17 @@ export function ShiftSearchPage() {
                     </td>
                   </tr>
                 ) : (
-                  (data?.content ?? []).map(row => (
-                    <ShiftRow key={row.id} row={row} />
+                  (data?.content ?? []).map((row) => (
+                    <ShiftRow
+                      key={row.id}
+                      row={row}
+                      onDetail={(id) =>
+                        window.open(
+                          `/modules/monitoring/shifts/${id}`,
+                          "_blank",
+                        )
+                      }
+                    />
                   ))
                 )}
               </tbody>
@@ -437,11 +469,11 @@ export function ShiftSearchPage() {
                 </Button>
                 {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
                   // Show pages around current
-                  let p = i
+                  let p = i;
                   if (totalPages > 7) {
-                    if (page < 4) p = i
-                    else if (page > totalPages - 5) p = totalPages - 7 + i
-                    else p = page - 3 + i
+                    if (page < 4) p = i;
+                    else if (page > totalPages - 5) p = totalPages - 7 + i;
+                    else p = page - 3 + i;
                   }
                   return (
                     <Button
@@ -453,7 +485,7 @@ export function ShiftSearchPage() {
                     >
                       {p + 1}
                     </Button>
-                  )
+                  );
                 })}
                 <Button
                   variant="ghost"
@@ -483,13 +515,19 @@ export function ShiftSearchPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Table row ────────────────────────────────────────────────────────────────
 
-function ShiftRow({ row }: { row: ShiftSearchResultDto }) {
-  const unityName = row.contractUnityName ?? row.specialServiceUnityName
+function ShiftRow({
+  row,
+  onDetail,
+}: {
+  row: ShiftSearchResultDto;
+  onDetail: (id: number) => void;
+}) {
+  const unityName = row.contractUnityName ?? row.specialServiceUnityName;
 
   return (
     <tr className="hover:bg-muted/30 transition-colors group">
@@ -508,7 +546,9 @@ function ShiftRow({ row }: { row: ShiftSearchResultDto }) {
       {/* Unidad */}
       <td className="px-5 py-3.5">
         <p className="text-sm font-medium">{unityName ?? "—"}</p>
-        <p className="text-[10px] text-muted-foreground">{row.clientName ?? ""}</p>
+        <p className="text-[10px] text-muted-foreground">
+          {row.clientName ?? ""}
+        </p>
       </td>
 
       {/* Fecha */}
@@ -522,12 +562,18 @@ function ShiftRow({ row }: { row: ShiftSearchResultDto }) {
           {assignmentTypeBadge(row.scheduleAssignmentType)}
           <div className="flex flex-wrap gap-1">
             {row.hasExceptions && (
-              <Badge variant="outline" className="text-[8px] border-blue-300 text-blue-600">
+              <Badge
+                variant="outline"
+                className="text-[8px] border-blue-300 text-blue-600"
+              >
                 Excepción
               </Badge>
             )}
             {row.hasExtraHours && (
-              <Badge variant="outline" className="text-[8px] border-amber-300 text-amber-600">
+              <Badge
+                variant="outline"
+                className="text-[8px] border-amber-300 text-amber-600"
+              >
                 H. Extra
               </Badge>
             )}
@@ -561,21 +607,26 @@ function ShiftRow({ row }: { row: ShiftSearchResultDto }) {
           variant="ghost"
           size="sm"
           className="text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
-          disabled
-          title="Vista de detalle de turno — próximamente"
+          onClick={() => onDetail(row.id)}
         >
           Ver Detalle
         </Button>
       </td>
     </tr>
-  )
+  );
 }
 
 // ─── Time cell (scheduled vs actual) ─────────────────────────────────────────
 
-function TimeCell({ scheduled, actual }: { scheduled?: string; actual?: string }) {
+function TimeCell({
+  scheduled,
+  actual,
+}: {
+  scheduled?: string;
+  actual?: string;
+}) {
   if (!actual && !scheduled) {
-    return <span className="text-muted-foreground/40 text-xs">—</span>
+    return <span className="text-muted-foreground/40 text-xs">—</span>;
   }
   return (
     <div className="flex flex-col items-center gap-0.5">
@@ -591,5 +642,5 @@ function TimeCell({ scheduled, actual }: { scheduled?: string; actual?: string }
         </div>
       )}
     </div>
-  )
+  );
 }

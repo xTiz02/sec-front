@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detalle de Turno: Sentinel Core - Advanced Audit</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "inverse-primary": "#bdc2ff",
+                "surface-container-highest": "#e2e2e4",
+                "primary-fixed": "#e0e0ff",
+                "tertiary": "#002104",
+                "on-primary-fixed-variant": "#343d96",
+                "primary-container": "#1a237e",
+                "on-tertiary-fixed": "#002204",
+                "secondary-container": "#0f6df3",
+                "secondary": "#0056c5",
+                "surface-bright": "#f9f9fb",
+                "inverse-surface": "#2f3132",
+                "surface": "#f9f9fb",
+                "on-primary-container": "#8690ee",
+                "on-error": "#ffffff",
+                "surface-variant": "#e2e2e4",
+                "on-tertiary-container": "#48ab4d",
+                "on-secondary-fixed": "#001945",
+                "on-tertiary": "#ffffff",
+                "tertiary-fixed": "#94f990",
+                "surface-container-lowest": "#ffffff",
+                "surface-container": "#eeeef0",
+                "on-error-container": "#93000a",
+                "secondary-fixed-dim": "#b0c6ff",
+                "outline-variant": "#c6c5d4",
+                "on-primary": "#ffffff",
+                "on-tertiary-fixed-variant": "#005313",
+                "tertiary-fixed-dim": "#78dc77",
+                "secondary-fixed": "#d9e2ff",
+                "on-secondary-fixed-variant": "#00429b",
+                "on-secondary-container": "#fefcff",
+                "error-container": "#ffdad6",
+                "tertiary-container": "#00390a",
+                "on-primary-fixed": "#000767",
+                "primary-fixed-dim": "#bdc2ff",
+                "on-surface": "#1a1c1d",
+                "on-secondary": "#ffffff",
+                "surface-tint": "#4c56af",
+                "error": "#ba1a1a",
+                "background": "#f9f9fb",
+                "inverse-on-surface": "#f0f0f2",
+                "surface-dim": "#d9dadc",
+                "on-background": "#1a1c1d",
+                "primary": "#000666",
+                "surface-container-high": "#e8e8ea",
+                "surface-container-low": "#f3f3f5",
+                "outline": "#767683",
+                "on-surface-variant": "#454652"
+              },
+              fontFamily: {
+                "headline": ["Inter"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.3rem;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #000666 0%, #1a237e 100%);
+        }
+        .exception-gradient {
+            background: linear-gradient(135deg, #fff1f0 0%, #ffdad6 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-100 dark:bg-slate-950 flex flex-col py-8 px-4 gap-2 z-50">
+<div class="mb-8 px-4">
+<h1 class="text-xl font-black tracking-tighter text-indigo-900 dark:text-indigo-100 uppercase">Sentinel Core</h1>
+<p class="text-[0.6875rem] uppercase tracking-[0.05em] text-outline font-bold">Advanced Audit Module</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 text-indigo-700 dark:text-indigo-300 font-bold bg-white dark:bg-slate-900 rounded-lg shadow-sm px-4 py-3 hover:translate-x-1 duration-150 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+<span class="text-sm font-medium tracking-wide">Attendance</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 hover:translate-x-1 duration-150 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history_toggle_off">history_toggle_off</span>
+<span class="text-sm font-medium tracking-wide">Overtime</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 hover:translate-x-1 duration-150 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="verified">verified</span>
+<span class="text-sm font-medium tracking-wide">Justifications</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 hover:translate-x-1 duration-150 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="text-sm font-medium tracking-wide">Reports</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-2">
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="text-sm font-medium tracking-wide">Support</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="text-sm font-medium tracking-wide">Sign Out</span>
+</a>
+</div>
+</aside>
+<main class="ml-64 min-h-screen pb-20">
+<header class="w-full top-0 sticky z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-outline-variant/30">
+<div class="flex justify-between items-center h-16 px-8 w-full">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-outline hover:bg-slate-100 p-2 rounded-full transition-colors">arrow_back</button>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-lg font-black tracking-tight text-indigo-950 dark:text-indigo-200">Shift #TRN-8829-X</h2>
+<span class="bg-error/10 text-error text-[0.625rem] font-black px-2 py-0.5 rounded-full border border-error/20">EXCEPTION ACTIVE</span>
+</div>
+<p class="text-[0.625rem] text-outline font-medium">Internal Audit System &gt; Shift Management &gt; Detalle de Turno</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex flex-col items-end">
+<p class="text-[0.625rem] font-bold text-outline">CLIENT ID</p>
+<p class="text-xs font-black text-primary">CLI-ALPHA-01</p>
+</div>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors cursor-pointer" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full ring-2 ring-white"></span>
+</div>
+<div class="flex items-center gap-3 pl-2 border-l border-outline-variant/30">
+<div class="text-right">
+<p class="text-[0.625rem] font-bold leading-tight">Admin System</p>
+<p class="text-[0.625rem] text-outline">Role: Supervisor</p>
+</div>
+<div class="w-9 h-9 rounded-full overflow-hidden bg-slate-200 border-2 border-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="Admin user avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB563B0CLCeU-bAiYNwokr8hjxMWHqoq0WwPxvEi_Hi2h4DnaEy3_z9sUC4NA0nLvl_eguQXse6mU-goDo5edWSaFZ8rGQsLKIVmwAw3-pjzczs_AEo2G1bfUp53_FJlkYuB3cGw7twr4QrNZ4Zt6AroIcETGtzY2i3xbqZoc_HzA4J3y78Eg6dSpoBiDUVJ7ENFzUsDMi0P3akGYw1Vi9qBWJx2VzFoT2uyp3Ig1Ek-34WGfhz5_Qi30y2cuENIaLvF-b8O3L_w"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- Guard & Exception Details -->
+<div class="grid grid-cols-12 gap-6">
+<div class="col-span-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 overflow-hidden shadow-sm">
+<div class="bg-surface-container-low px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="badge">badge</span>
+<h3 class="font-bold text-sm uppercase tracking-wider">Guard Assignment Information</h3>
+</div>
+<span class="text-[0.625rem] text-outline font-mono">STAMP: 20231024-T8829</span>
+</div>
+<div class="p-6 grid grid-cols-2 gap-8 relative">
+<!-- Vertical Divider -->
+<div class="absolute left-1/2 top-6 bottom-6 w-px bg-outline-variant/30 hidden md:block"></div>
+<!-- Coverage Guard -->
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 text-primary text-[0.625rem] font-black px-2 py-0.5 rounded">COVERAGE GUARD</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="relative">
+<img class="w-16 h-16 rounded-xl object-cover ring-4 ring-primary-fixed" data-alt="Marcus Holloway Portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB563B0CLCeU-bAiYNwokr8hjxMWHqoq0WwPxvEi_Hi2h4DnaEy3_z9sUC4NA0nLvl_eguQXse6mU-goDo5edWSaFZ8rGQsLKIVmwAw3-pjzczs_AEo2G1bfUp53_FJlkYuB3cGw7twr4QrNZ4Zt6AroIcETGtzY2i3xbqZoc_HzA4J3y78Eg6dSpoBiDUVJ7ENFzUsDMi0P3akGYw1Vi9qBWJx2VzFoT2uyp3Ig1Ek-34WGfhz5_Qi30y2cuENIaLvF-b8O3L_w"/>
+<div class="absolute -bottom-1 -right-1 w-6 h-6 bg-tertiary-fixed-dim rounded-full flex items-center justify-center border-2 border-white">
+<span class="material-symbols-outlined text-[14px] text-tertiary" data-icon="check">check</span>
+</div>
+</div>
+<div>
+<h4 class="text-lg font-black text-on-surface">Marcus Holloway</h4>
+<p class="text-xs font-bold text-primary">ID: SENT-9021</p>
+<p class="text-[0.6875rem] text-outline mt-1 font-medium">Rank: Senior Field Officer</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 text-[0.625rem] font-bold uppercase text-outline">
+<div class="bg-surface-container p-2 rounded">Status: <span class="text-on-tertiary-container">Active On-Site</span></div>
+<div class="bg-surface-container p-2 rounded">Compliance: <span class="text-on-tertiary-container">100% Verified</span></div>
+</div>
+</div>
+<!-- Original Assigned Guard -->
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="bg-error/10 text-error text-[0.625rem] font-black px-2 py-0.5 rounded">ORIGINAL ASSIGNEE</div>
+</div>
+<div class="flex items-start gap-4">
+<img class="w-16 h-16 rounded-xl object-cover opacity-60 grayscale ring-1 ring-outline-variant" data-alt="Sarah Jenkins Portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_pRQoXxltmp43pmgy9dmUJO33VM-nEAyEzCIa8ZD66AM54f3__pN8QW0ovob5m96MJ2tXwdC-HOpUC98wBVELfs5S8KY6G-OoIwVd8vImzplpNOi3Wag9V48UHVP2oS3exEXoroYBOh2wtlCpUzhjYO-CfFXRBuDstXaEMB-P4188Dj1KwjK6zpRJ-syUud6ew6cTlRVP1dSGbQDvOv9UAzcVncslBjLcIR0uqeIn6rSlCmMiPlTSiIzSMJCcigoY_20OQVVYLA"/>
+<div>
+<h4 class="text-lg font-black text-on-surface/60">Sarah Jenkins</h4>
+<p class="text-xs font-bold text-outline">ID: SENT-4412</p>
+<p class="text-[0.6875rem] text-outline mt-1 font-medium italic">Reason: Medical Leave (Certified)</p>
+</div>
+</div>
+<div class="bg-error-container/20 p-3 rounded-lg border border-error/10">
+<div class="mb-2">
+<span class="bg-error text-white text-[0.625rem] font-black px-3 py-1 rounded uppercase tracking-widest">Medical Leave</span>
+</div>
+<p class="text-[0.625rem] font-black text-error uppercase mb-1">Replacement Detail</p>
+<p class="text-xs italic text-on-error-container leading-tight">"Medical Leave - Certified by Internal Health Dept (Doc #88229). Coverage required for Perimeter Gate 4."</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Unit Info Card -->
+<div class="col-span-4 flex flex-col gap-4">
+<div class="bg-primary text-white rounded-2xl p-6 shadow-lg shadow-primary/20 flex flex-col justify-between flex-1">
+<div class="space-y-4">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-3xl text-primary-fixed" data-icon="domain">domain</span>
+<div class="text-right">
+<p class="text-[0.625rem] font-black text-primary-fixed uppercase">Unit ID</p>
+<p class="text-sm font-black">ALPHA-DCNTR-01</p>
+</div>
+</div>
+<div>
+<h3 class="text-2xl font-black leading-tight">Data Center Alpha</h3>
+<p class="text-sm text-primary-fixed font-medium">Perimeter Security &amp; Gate Control</p>
+</div>
+</div>
+<div class="pt-6 border-t border-white/10 grid grid-cols-2 gap-4">
+<div>
+<p class="text-[0.625rem] font-bold text-primary-fixed/60 uppercase">Scheduled Hours</p>
+<p class="text-sm font-bold">08:00 AM — 18:00 PM</p>
+</div>
+<div>
+<p class="text-[0.625rem] font-bold text-primary-fixed/60 uppercase">Date</p>
+<p class="text-sm font-bold">Oct 24, 2023</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-highest/30 rounded-2xl p-4 border border-dashed border-outline-variant/60 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-on-tertiary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-container text-xl" data-icon="cloud_done">cloud_done</span>
+</div>
+<div>
+<p class="text-[0.625rem] font-bold text-outline uppercase">System Health</p>
+<p class="text-[0.6875rem] font-black text-on-tertiary-container">System Healthy / Data Synced</p>
+</div>
+</div>
+<p class="text-[0.5rem] font-bold text-outline">11:05 AM</p>
+</div>
+</div>
+</div>
+<!-- Overtime & Audit Actions -->
+<div class="grid grid-cols-12 gap-6">
+<div class="col-span-8 bg-surface-container-low rounded-2xl p-6 flex items-center justify-between border border-outline-variant/30">
+<div class="flex items-center gap-6">
+<div class="bg-tertiary-fixed-dim p-4 rounded-xl text-tertiary shadow-inner">
+<span class="material-symbols-outlined text-4xl" data-icon="more_time">more_time</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-xl font-black text-on-surface">Active Overtime</h3>
+<span class="bg-tertiary text-white text-[0.625rem] font-black px-2 py-0.5 rounded">IN PROGRESS</span>
+</div>
+<p class="text-sm text-outline font-medium">
+                                Covering: <strong class="text-primary">Sarah Jenkins (ID: SENT-4412)</strong> | Range: <strong>14:00 — 18:30</strong>
+</p>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-black text-tertiary">01:45:22</span>
+<span class="text-[0.625rem] text-outline font-black uppercase">Current extra</span>
+</div>
+<div class="h-4 w-px bg-outline-variant/50"></div>
+<div class="flex items-baseline gap-1 text-outline">
+<span class="text-sm font-bold">Total Est: +4.5h</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="bg-tertiary text-white px-6 py-3 rounded-xl text-xs font-black tracking-widest hover:brightness-110 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="stop_circle">stop_circle</span>
+                            FINISH OVERTIME
+                        </button>
+<button class="bg-white border border-outline-variant/50 text-on-surface px-6 py-3 rounded-xl text-xs font-black tracking-widest hover:bg-slate-50 transition-all">
+                            LOGS
+                        </button>
+</div>
+</div>
+<div class="col-span-4 space-y-3">
+<button class="w-full h-full primary-gradient text-white p-4 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-indigo-900/10 hover:scale-[1.02] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="text-xs font-black tracking-widest uppercase">Generate Full Audit Report</span>
+</button>
+</div>
+</div>
+<!-- Detailed Timeline -->
+<div class="bg-surface-container-low rounded-2xl border border-outline-variant/30 overflow-hidden">
+<div class="bg-white px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="list_alt">list_alt</span>
+<h3 class="font-bold text-sm uppercase tracking-wider">Attendance &amp; Verification Timeline</h3>
+</div>
+<div class="flex gap-4 text-[0.625rem] font-black">
+<span class="flex items-center gap-1 text-on-tertiary-container"><span class="w-2 h-2 rounded-full bg-on-tertiary-container"></span> VERIFIED</span>
+<span class="flex items-center gap-1 text-error"><span class="w-2 h-2 rounded-full bg-error"></span> EXCEPTION</span>
+<span class="flex items-center gap-1 text-outline"><span class="w-2 h-2 rounded-full bg-outline"></span> PENDING</span>
+</div>
+</div>
+<div class="divide-y divide-outline-variant/20">
+<!-- Entry Point -->
+<div class="grid grid-cols-12 items-center p-6 bg-white hover:bg-surface-container-lowest transition-colors">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-tertiary-fixed-dim/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-2xl" data-icon="login">login</span>
+</div>
+<div>
+<p class="text-sm font-black text-on-surface">Entry Check-In</p>
+<p class="text-[0.625rem] font-bold text-outline">Ref ID: VER-IN-001</p>
+</div>
+</div>
+<div class="col-span-3">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<p class="text-sm font-black text-on-surface">05:58 AM</p>
+<span class="bg-on-tertiary-container/10 text-on-tertiary-container text-[0.5rem] font-black px-1.5 py-0.5 rounded uppercase">On Time</span>
+</div>
+<p class="text-[0.625rem] text-outline font-medium">Scheduled: 06:00 AM</p>
+</div>
+</div>
+<div class="col-span-2">
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-lg" data-icon="face">face</span>
+<span class="text-[0.6875rem] font-bold uppercase">FaceID v2.0</span>
+</div>
+</div>
+<div class="col-span-2">
+<div class="w-14 h-14 rounded-lg bg-slate-100 overflow-hidden border border-outline-variant/30 cursor-pointer group relative">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110" data-alt="Entry verification photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBabMJkgWxeL6c5BSbiqN3jzwpzejtgd6eA8dgPWG2WHYNZM-xpGhMAff_Gu8LunGYwU3AXHB0_lYKQ3qTkLMYAj7vJUtpZHXzEymCs6xcoMl-tCOK3G3cNTQyX3d57MDBuPWb2mupiTcLIAJbG5dP2gLa2dQzTLamze-wLnh6dFiuVDZ8FSuEpG_6u2XIC_Hr7iUiVQvZMjKJZPSVmjzo5OzFnKY9TUe6PeM7R9HMElMdsUwlGthxiB4TdOM639FdCOY2Ystur1A"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+<span class="material-symbols-outlined text-white text-lg" data-icon="zoom_in">zoom_in</span>
+</div>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<button class="text-secondary font-black text-[0.625rem] tracking-widest uppercase hover:underline">View Log Full Data</button>
+</div>
+</div>
+<!-- Lunch Start -->
+<div class="grid grid-cols-12 items-center p-6 bg-error-container/5 hover:bg-error-container/10 transition-colors">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-secondary-fixed/30 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-2xl" data-icon="restaurant">restaurant</span>
+</div>
+<div>
+<p class="text-sm font-black text-on-surface">Lunch Start</p>
+<p class="text-[0.625rem] font-bold text-outline">Ref ID: VER-BK-001</p>
+</div>
+</div>
+<div class="col-span-3">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<p class="text-sm font-black text-on-surface">10:12 AM</p>
+<span class="bg-error/10 text-error text-[0.5rem] font-black px-1.5 py-0.5 rounded uppercase">+12m Delay</span>
+</div>
+<p class="text-[0.625rem] text-outline font-medium">Scheduled: 10:00 AM</p>
+</div>
+</div>
+<div class="col-span-2">
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-lg" data-icon="location_on">location_on</span>
+<span class="text-[0.6875rem] font-bold uppercase">GPS + Photo</span>
+</div>
+</div>
+<div class="col-span-2">
+<div class="w-14 h-14 rounded-lg bg-slate-100 overflow-hidden border border-outline-variant/30 cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="Lunch start verification photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrQyoRZ6SrPQIYbTC3Qah4PjTzkM3fIFd7pJvsBt7Yo_ymfy3DEbmKkaTcWhPp15x_3Ohy7t47VcfQjsnqxu-OweoL-_CVoIbOIYRasp8ERdCgAV0rEnuvsP1vlKVxLlw773HaMm8mAscMG_8yHsprx3XRBrQ80NLjHgM6TidiwkDv--sRAJbnDTFGWCgQr4p33tIq51TFM5y7ELE30tU8SmpzYc5VNYkGfZBrxk1Vb0fZJbsdM_US09Gkp6CNDjGUo8Ytu8D-4g"/>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<button class="bg-secondary text-white px-4 py-2 rounded text-[0.625rem] font-black tracking-widest uppercase hover:brightness-110">Justify Delay</button>
+</div>
+</div>
+<!-- Lunch End -->
+<div class="grid grid-cols-12 items-center p-6 bg-white hover:bg-surface-container-lowest transition-colors">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-secondary-fixed/30 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-2xl" data-icon="fastfood">fastfood</span>
+</div>
+<div>
+<p class="text-sm font-black text-on-surface">Lunch End</p>
+<p class="text-[0.625rem] font-bold text-outline">Ref ID: VER-BK-002</p>
+</div>
+</div>
+<div class="col-span-3">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<p class="text-sm font-black text-on-surface">11:00 AM</p>
+<span class="bg-on-tertiary-container/10 text-on-tertiary-container text-[0.5rem] font-black px-1.5 py-0.5 rounded uppercase">Perfect</span>
+</div>
+<p class="text-[0.625rem] text-outline font-medium">Scheduled: 11:00 AM</p>
+</div>
+</div>
+<div class="col-span-2">
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-lg" data-icon="location_on">location_on</span>
+<span class="text-[0.6875rem] font-bold uppercase">GeoTag Link</span>
+</div>
+</div>
+<div class="col-span-2">
+<div class="w-14 h-14 rounded-lg bg-slate-100 overflow-hidden border border-outline-variant/30 cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="Lunch end verification photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD46m6JeyqDkmhUVfSMBk3nxfHfd18r6z5MqywPsq1__LdJD_5ogsh1d5HtQtZRkhTCYJ_mpZ65tKW4QqaCJx8ZLw1g9jvf-CVorEiPPIBavmO8IE3feZiDIbNx9UWXYsaOjjbM2gTbWsXp5RK4WqPhJoS9CUsGgiWLy4GItJPg60tem27sjFamBFA1GJnC7K-mJo2gRtHdRzMzL5vacjiTUYbImyHjOByFkQ2nVXTNkFGsSIDXmhHF0cUQoVjLBF5th09PLe-MwQ"/>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<button class="text-secondary font-black text-[0.625rem] tracking-widest uppercase hover:underline">View Log Full Data</button>
+</div>
+</div>
+<!-- Exit -->
+<div class="grid grid-cols-12 items-center p-6 bg-slate-50/50 opacity-60">
+<div class="col-span-3 flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-2xl" data-icon="logout">logout</span>
+</div>
+<div>
+<p class="text-sm font-black text-on-surface">Exit Check-Out</p>
+<p class="text-[0.625rem] font-bold text-outline italic">Status: Scheduled</p>
+</div>
+</div>
+<div class="col-span-3">
+<div class="space-y-1">
+<p class="text-sm font-black text-outline">Pending Action</p>
+<p class="text-[0.625rem] text-outline font-medium">Scheduled: 14:00 PM</p>
+</div>
+</div>
+<div class="col-span-2">
+<p class="text-[0.6875rem] font-black text-outline uppercase tracking-tighter">Awaiting Exit Sensor</p>
+</div>
+<div class="col-span-2">
+<div class="w-14 h-14 rounded-lg border-2 border-dashed border-outline-variant/40 flex items-center justify-center text-outline-variant">
+<span class="material-symbols-outlined text-xl" data-icon="photo_camera">photo_camera</span>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<span class="text-[0.625rem] font-bold text-outline italic">Active Monitoring...</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-8 right-8 z-50 flex gap-4">
+<button class="bg-white text-on-surface w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-slate-50 transition-all border border-outline-variant/50">
+<span class="material-symbols-outlined text-2xl" data-icon="chat">chat</span>
+</button>
+<button class="primary-gradient text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-2xl" data-icon="print">print</span>
+</button>
+</div>
+</body></html>

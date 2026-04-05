@@ -1,24 +1,31 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Loader2, MapPin, Search, CheckCircle2, XCircle, Clock } from "lucide-react"
-import { useGetUnitShiftDetailsQuery } from "../api/monitoringApi"
-import type { UnitMonitoringStatusDto } from "../api/monitoringModel"
-import type { GuardShiftDetailDto } from "../api/monitoringModel"
+} from "@/components/ui/select";
+import {
+  Loader2,
+  MapPin,
+  Search,
+  CheckCircle2,
+  XCircle,
+  Clock,
+} from "lucide-react";
+import { useGetUnitShiftDetailsQuery } from "../api/monitoringApi";
+import type { UnitMonitoringStatusDto } from "../api/monitoringModel";
+import type { GuardShiftDetailDto } from "../api/monitoringModel";
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
@@ -27,58 +34,62 @@ function StatusIcon({ active }: { active: boolean }) {
     <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
   ) : (
     <XCircle className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-  )
+  );
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface UnitShiftModalProps {
-  unit: UnitMonitoringStatusDto | null
-  date: string
-  onClose: () => void
+  unit: UnitMonitoringStatusDto | null;
+  date: string;
+  onClose: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
-  const [search, setSearch] = useState("")
-  const [shiftTypeFilter, setShiftTypeFilter] = useState<"all" | "normal" | "exception">("all")
-  const [statusFilter, setStatusFilter] = useState<"all" | "on_post" | "absent" | "future">("all")
+  const [search, setSearch] = useState("");
+  const [shiftTypeFilter, setShiftTypeFilter] = useState<
+    "all" | "normal" | "exception"
+  >("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "on_post" | "absent" | "future"
+  >("all");
 
   const { data: shifts = [], isLoading } = useGetUnitShiftDetailsQuery(
     { contractUnityId: unit?.contractUnityId ?? 0, date },
     { skip: !unit },
-  )
+  );
 
   const filtered = useMemo(() => {
-    return shifts.filter(s => {
+    return shifts.filter((s) => {
       // Text search
       if (search.trim()) {
-        const q = search.toLowerCase()
+        const q = search.toLowerCase();
         if (
           !s.guardName.toLowerCase().includes(q) &&
           !s.documentNumber.toLowerCase().includes(q) &&
           !s.guardCode.toLowerCase().includes(q)
         )
-          return false
+          return false;
       }
       // Shift type
-      if (shiftTypeFilter === "normal" && s.isException) return false
-      if (shiftTypeFilter === "exception" && !s.isException) return false
+      if (shiftTypeFilter === "normal" && s.isException) return false;
+      if (shiftTypeFilter === "exception" && !s.isException) return false;
       // Status
-      if (statusFilter === "on_post" && !s.shouldBeOnPost) return false
-      if (statusFilter === "absent" && !s.isAbsent) return false
-      if (statusFilter === "future" && !s.isFutureShift) return false
-      return true
-    })
-  }, [shifts, search, shiftTypeFilter, statusFilter])
+      if (statusFilter === "on_post" && !s.shouldBeOnPost) return false;
+      if (statusFilter === "absent" && !s.isAbsent) return false;
+      if (statusFilter === "future" && !s.isFutureShift) return false;
+      return true;
+    });
+  }, [shifts, search, shiftTypeFilter, statusFilter]);
 
-  const onPostCount = shifts.filter(s => s.shouldBeOnPost).length
-  const absentCount = shifts.filter(s => s.isAbsent).length
-  const futureCount = shifts.filter(s => s.isFutureShift).length
+  const onPostCount = shifts.filter((s) => s.shouldBeOnPost).length;
+  const absentCount = shifts.filter((s) => s.isAbsent).length;
+  const futureCount = shifts.filter((s) => s.isFutureShift).length;
 
   return (
-    <Dialog open={!!unit} onOpenChange={v => !v && onClose()}>
+    <Dialog open={!!unit} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="!w-[95vw] !max-w-[95vw] h-[90vh] !max-h-[90vh] p-0 flex flex-col gap-0">
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <DialogHeader className="px-8 pt-7 pb-5 border-b border-border shrink-0">
@@ -96,7 +107,9 @@ export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
                 </>
               )}
               <span className="mx-1">•</span>
-              <span className="text-muted-foreground/70">{unit.clientName}</span>
+              <span className="text-muted-foreground/70">
+                {unit.clientName}
+              </span>
             </div>
           )}
         </DialogHeader>
@@ -114,7 +127,7 @@ export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
                   className="pl-8 h-9 text-sm"
                   placeholder="Nombre, DNI o código..."
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
             </div>
@@ -123,7 +136,12 @@ export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
               <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 Tipo de Turno
               </label>
-              <Select value={shiftTypeFilter} onValueChange={v => setShiftTypeFilter(v as typeof shiftTypeFilter)}>
+              <Select
+                value={shiftTypeFilter}
+                onValueChange={(v) =>
+                  setShiftTypeFilter(v as typeof shiftTypeFilter)
+                }
+              >
                 <SelectTrigger className="h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
@@ -139,7 +157,10 @@ export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
               <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 Estado General
               </label>
-              <Select value={statusFilter} onValueChange={v => setStatusFilter(v as typeof statusFilter)}>
+              <Select
+                value={statusFilter}
+                onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+              >
                 <SelectTrigger className="h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
@@ -160,7 +181,11 @@ export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
                 <Button
                   size="sm"
                   className="flex-1 h-9"
-                  onClick={() => { setSearch(""); setShiftTypeFilter("all"); setStatusFilter("all") }}
+                  onClick={() => {
+                    setSearch("");
+                    setShiftTypeFilter("all");
+                    setStatusFilter("all");
+                  }}
                   variant="outline"
                 >
                   Limpiar
@@ -178,7 +203,9 @@ export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex items-center justify-center py-16">
-              <p className="text-sm text-muted-foreground">No hay turnos que coincidan con los filtros.</p>
+              <p className="text-sm text-muted-foreground">
+                No hay turnos que coincidan con los filtros.
+              </p>
             </div>
           ) : (
             <table className="w-full text-left">
@@ -208,8 +235,11 @@ export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {filtered.map(shift => (
-                  <ShiftRow key={shift.dateGuardUnityAssignmentId} shift={shift} />
+                {filtered.map((shift) => (
+                  <ShiftRow
+                    key={shift.dateGuardUnityAssignmentId}
+                    shift={shift}
+                  />
                 ))}
               </tbody>
             </table>
@@ -238,7 +268,7 @@ export function UnitShiftModal({ unit, date, onClose }: UnitShiftModalProps) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // ─── Row component ────────────────────────────────────────────────────────────
@@ -258,7 +288,10 @@ function ShiftRow({ shift }: { shift: GuardShiftDetailDto }) {
       <td className="py-3.5">
         <div className="flex flex-col gap-1">
           {shift.isException ? (
-            <Badge variant="outline" className="text-[9px] border-blue-400 text-blue-600 w-fit">
+            <Badge
+              variant="outline"
+              className="text-[9px] border-blue-400 text-blue-600 w-fit"
+            >
               Excepción
             </Badge>
           ) : (
@@ -267,7 +300,10 @@ function ShiftRow({ shift }: { shift: GuardShiftDetailDto }) {
             </Badge>
           )}
           {shift.hasExtraHours && (
-            <Badge variant="outline" className="text-[9px] border-amber-400 text-amber-600 w-fit">
+            <Badge
+              variant="outline"
+              className="text-[9px] border-amber-400 text-amber-600 w-fit"
+            >
               Horas Extra
             </Badge>
           )}
@@ -307,12 +343,18 @@ function ShiftRow({ shift }: { shift: GuardShiftDetailDto }) {
           variant="ghost"
           size="sm"
           className="text-xs text-primary font-semibold h-7 px-2"
-          disabled
+          // disabled
           title="Vista de detalle de turno — próximamente"
+          onClick={() =>
+            window.open(
+              `/modules/monitoring/shifts/${shift.dateGuardUnityAssignmentId}`,
+              "_blank",
+            )
+          }
         >
           Ver Detalle
         </Button>
       </td>
     </tr>
-  )
+  );
 }
