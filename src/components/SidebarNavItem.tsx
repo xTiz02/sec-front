@@ -25,6 +25,7 @@ import {
   FileBarChart2,
   Star,
   ClipboardClock,
+  Binoculars,
 } from "lucide-react"
 
 
@@ -110,6 +111,7 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
       { label: "Usuarios", path: "/modules/security/users" },
       { label: "Perfiles", path: "/modules/security/profiles" },
+      { label: "Eventos", path: "/modules/security/events" },
     ],
   },
   {

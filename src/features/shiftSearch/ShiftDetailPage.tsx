@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
@@ -12,6 +13,7 @@ import {
   FileWarning,
   Loader2,
   MapPin,
+  Plus,
   ShieldCheck,
   User,
   XCircle,
@@ -19,6 +21,7 @@ import {
   Timer,
   Camera,
 } from "lucide-react"
+import { EnableExtraHoursDialog } from "./components/EnableExtraHoursDialog"
 import {
   ScheduleAssignmentType,
   ScheduleAssignmentTypeLabel,
@@ -352,6 +355,7 @@ export function ShiftDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const shiftId = Number(id)
+  const [extraHoursOpen, setExtraHoursOpen] = useState(false)
 
   const { data: shift, isLoading, isError } = useGetShiftDetailQuery(shiftId, {
     skip: isNaN(shiftId),
@@ -414,6 +418,16 @@ export function ShiftDetailPage() {
             {dateLabel(shift.date)}
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 gap-2 border-emerald-400 text-emerald-700 hover:bg-emerald-50"
+          onClick={() => setExtraHoursOpen(true)}
+          disabled={shift.finalized}
+        >
+          <Plus className="h-4 w-4" />
+          Horas Extra
+        </Button>
       </div>
 
       {/* ── Top grid: Guard + Unity ────────────────────────────────────────── */}
@@ -492,7 +506,9 @@ export function ShiftDetailPage() {
               <div>
                 <p className="text-[10px] font-bold text-primary-foreground/50 uppercase">Horario</p>
                 <p className="text-sm font-bold">
-                  {shift.scheduledEntry ?? "—"} — {shift.scheduledExit ?? "—"}
+                  {shift.scheduledEntry ? shift.scheduledEntry.slice(11, 16) : "—"}
+                  {" — "}
+                  {shift.scheduledExit ? shift.scheduledExit.slice(11, 16) : "—"}
                 </p>
               </div>
               <div>
@@ -612,6 +628,14 @@ export function ShiftDetailPage() {
           <InfoRow label="Nombre" value={shift.scheduleMonthlyName} />
         </Section>
       )}
+
+      {/* ── Enable extra hours dialog ────────────────────────────────────────── */}
+      <EnableExtraHoursDialog
+        open={extraHoursOpen}
+        shift={shift}
+        onClose={() => setExtraHoursOpen(false)}
+        onSuccess={() => setExtraHoursOpen(false)}
+      />
     </div>
   )
 }

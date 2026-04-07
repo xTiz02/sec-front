@@ -140,8 +140,8 @@ export interface GuardCurrentShiftDto {
 export interface CreateAssistanceEventRequest {
   dateGuardUnityAssignmentId: number
   assistanceType: AssistanceType
-  /** Base64 encoded photo (ENTRY and EXIT only) */
-  photoBase64?: string
+  /** Photo file captured by the guard (ENTRY and EXIT only). Sent as multipart/form-data. */
+  photoFile?: File
   latitude?: number
   longitude?: number
 }

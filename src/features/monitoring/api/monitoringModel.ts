@@ -33,7 +33,7 @@ export interface GuardShiftDetailDto {
   isException: boolean    // hasExceptions flag
   hasExtraHours: boolean
   shouldBeOnPost: boolean // currently within shift hours
-  isAbsent: boolean       // scheduleAssignmentType === ABSENT
+  absent: boolean       // scheduleAssignmentType === ABSENT
   hasArrived: boolean     // has at least one ENTRY assistance
   isFutureShift: boolean  // shift hasn't started yet
   lastAssistanceType?: AssistanceType

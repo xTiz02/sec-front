@@ -120,9 +120,9 @@ export function GuardAssistancePage() {
   )
 
   const handleCameraCapture = useCallback(
-    async (base64: string) => {
+    async (file: File) => {
       if (!pendingMarkType) return
-      await doMark(pendingMarkType, base64)
+      await doMark(pendingMarkType, file)
       setPendingMarkType(null)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,12 +133,12 @@ export function GuardAssistancePage() {
     setPendingMarkType(null)
   }, [])
 
-  async function doMark(type: AssistanceType, photoBase64?: string) {
+  async function doMark(type: AssistanceType, photoFile?: File) {
     if (!data?.shift) return
     await markAttendance({
       dateGuardUnityAssignmentId: data.shift.dateGuardUnityAssignmentId,
       assistanceType: type,
-      photoBase64,
+      photoFile,
       latitude: coords?.lat,
       longitude: coords?.lon,
     }).unwrap()

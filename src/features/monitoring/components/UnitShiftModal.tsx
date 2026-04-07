@@ -331,7 +331,7 @@ function ShiftRow({ shift }: { shift: GuardShiftDetailDto }) {
       </td>
 
       <td className="py-3.5 text-center">
-        {shift.isAbsent ? (
+        {shift.absent ? (
           <XCircle className="h-4 w-4 text-destructive mx-auto" />
         ) : (
           <XCircle className="h-4 w-4 text-muted-foreground/30 mx-auto" />

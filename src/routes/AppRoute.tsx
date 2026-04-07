@@ -43,6 +43,7 @@ import { GuardAssistancePage } from "@/features/assistance/GuardAssistancePage"
 import { MonitoringPage } from "@/features/monitoring/MonitoringPage"
 import { ShiftSearchPage } from "@/features/shiftSearch/ShiftSearchPage"
 import { ShiftDetailPage } from "@/features/shiftSearch/ShiftDetailPage";
+import { EventAuditPage } from "@/features/eventAudit/EventAuditPage";
 
 const DashboardPlaceholder = () => (
   <div className="flex h-64 items-center justify-center rounded-xl border border-dashed">
@@ -56,10 +57,10 @@ export const AppRoutes = () => (
     <Route path="/sign-out" element={<SignOut />} />
 
     <Route path="/" element={<ProtectedRoute />}>
-      <Route index element={<Navigate to="/modules/dashboard" replace />} />
+      <Route index element={<Navigate to="/modules/monitoring" replace />} />
 
       <Route path="modules">
-        <Route index element={<Navigate to="/modules/dashboard" replace />} />
+        <Route index element={<Navigate to="/modules/monitoring" replace />} />
         <Route path="dashboard" element={<DashboardPlaceholder />} />
 
         {/* Personal */}
@@ -127,6 +128,7 @@ export const AppRoutes = () => (
         <Route path="security">
           <Route path="users" element={<UsersPage />} />
           <Route path="profiles" element={<SecurityProfilesPage />} />
+          <Route path="events" element={<EventAuditPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

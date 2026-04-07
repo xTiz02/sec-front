@@ -15,9 +15,18 @@ export const assistanceApi = baseApi.injectEndpoints({
       providesTags: [{ type: "GuardAssistance", id: "CURRENT" }],
     }),
 
-    /** Mark attendance (ENTRY / EXIT / BREAK_START / BREAK_END) */
+    /** Mark attendance (ENTRY / EXIT / BREAK_START / BREAK_END).
+     *  Sent as multipart/form-data so the backend can forward the photo directly to S3. */
     markAttendance: builder.mutation<GuardAssistanceEventDto, CreateAssistanceEventRequest>({
-      query: body => ({ url: "/guard-assistance/mark", method: "POST", body }),
+      query: ({ dateGuardUnityAssignmentId, assistanceType, photoFile, latitude, longitude }) => {
+        const formData = new FormData()
+        formData.append("dateGuardUnityAssignmentId", String(dateGuardUnityAssignmentId))
+        formData.append("assistanceType", assistanceType)
+        if (photoFile) formData.append("photo", photoFile, photoFile.name)
+        if (latitude != null) formData.append("latitude", String(latitude))
+        if (longitude != null) formData.append("longitude", String(longitude))
+        return { url: "/guard-assistance/mark", method: "POST", body: formData }
+      },
       invalidatesTags: [{ type: "GuardAssistance", id: "CURRENT" }],
     }),
 

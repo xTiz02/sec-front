@@ -6,6 +6,8 @@ import type {
   ShiftSearchParams,
   ShiftSearchResultDto,
   ShiftDetailDto,
+  NextShiftToCoverDto,
+  CreateExtraHoursRequest,
 } from "./shiftSearchModel"
 
 export const shiftSearchApi = baseApi.injectEndpoints({
@@ -46,6 +48,21 @@ export const shiftSearchApi = baseApi.injectEndpoints({
       query: id => `/date-guard-unity-assignment/${id}/detail`,
       providesTags: (_r, _e, id) => [{ type: "DailyAssignment", id }],
     }),
+
+    /** Next shifts available in the same unity to cover (for extra-hours form) */
+    getNextShiftsToCover: builder.query<NextShiftToCoverDto[], number>({
+      query: assignmentId =>
+        `/date-guard-unity-assignment/${assignmentId}/next-shifts-to-cover`,
+    }),
+
+    /** Enable extra hours for an assignment */
+    createExtraHours: builder.mutation<void, CreateExtraHoursRequest>({
+      query: body => ({ url: `/guard-extra-hours`, method: "POST", body }),
+      invalidatesTags: (_r, _e, arg) => [
+        { type: "DailyAssignment", id: arg.principalDateGuardUnityAssignmentId },
+        { type: "GuardExtraHours", id: "LIST" },
+      ],
+    }),
   }),
   overrideExisting: false,
 })
@@ -55,4 +72,6 @@ export const {
   useSearchUnityLiteQuery,
   useSearchShiftsQuery,
   useGetShiftDetailQuery,
+  useGetNextShiftsToCoverQuery,
+  useCreateExtraHoursMutation,
 } = shiftSearchApi

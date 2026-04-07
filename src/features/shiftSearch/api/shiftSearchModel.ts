@@ -128,8 +128,10 @@ export interface ShiftDetailDto {
   // ── Turn ────────────────────────────────────────────────────────────────────
   turnName?: string
   turnType?: TurnType
-  scheduledEntry?: string  // "HH:mm"
-  scheduledExit?: string   // "HH:mm"
+  scheduledEntry?: string     // ISO datetime "yyyy-MM-ddTHH:mm:ss"
+  scheduledExit?: string      // ISO datetime "yyyy-MM-ddTHH:mm:ss"
+  maxScheduledEntry?: string  // ISO datetime — latest allowed entry mark
+  maxScheduledExit?: string   // ISO datetime — latest allowed exit mark
 
   // ── Unity & Client ──────────────────────────────────────────────────────────
   contractUnityId?: number
@@ -149,6 +151,32 @@ export interface ShiftDetailDto {
   assistanceEvents: ShiftAssistanceEventDetailDto[]
   exceptions: ShiftExceptionDetailDto[]
   extraHours: ShiftExtraHoursDetailDto[]
+}
+
+// ─── Next shifts to cover (for extra-hours form) ─────────────────────────────
+
+export interface NextShiftToCoverDto {
+  id: number
+  date: string           // "yyyy-MM-dd"
+  guardName: string
+  guardCode?: string
+  scheduledEntry?: string  // "HH:mm"
+  scheduledExit?: string   // "HH:mm"
+  turnName?: string
+  turnType?: TurnType
+}
+
+// ─── Create extra hours request ───────────────────────────────────────────────
+
+export interface CreateExtraHoursRequest {
+  principalDateGuardUnityAssignmentId: number
+  /** The shift being covered. Omit when guard stays extra time without covering a specific shift. */
+  coverDateGuardUnityAssignmentId?: number
+  startDate: string  // "yyyy-MM-dd"
+  startTime: string  // "HH:mm:ss"
+  /** Required only when no coverDateGuardUnityAssignmentId */
+  endDate?: string
+  endTime?: string
 }
 
 // ─── Result row ───────────────────────────────────────────────────────────────

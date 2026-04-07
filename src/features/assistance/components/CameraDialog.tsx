@@ -15,7 +15,7 @@ interface CameraDialogProps {
   open: boolean
   title: string
   isConfirming: boolean
-  onCapture: (base64: string) => Promise<void>
+  onCapture: (file: File) => Promise<void>
   onCancel: () => void
 }
 
@@ -32,7 +32,7 @@ export function CameraDialog({
 
   const [cameraState, setCameraState] = useState<CameraState>("REQUESTING")
   const [capturedUrl, setCapturedUrl] = useState<string | null>(null)
-  const [capturedBase64, setCapturedBase64] = useState<string | null>(null)
+  const [capturedFile, setCapturedFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const stopStream = useCallback(() => {
@@ -68,7 +68,7 @@ export function CameraDialog({
       stopStream()
       setCameraState("REQUESTING")
       setCapturedUrl(null)
-      setCapturedBase64(null)
+      setCapturedFile(null)
       setError(null)
       return
     }
@@ -85,23 +85,32 @@ export function CameraDialog({
     canvas.height = video.videoHeight
     canvas.getContext("2d")?.drawImage(video, 0, 0)
 
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85)
-    setCapturedUrl(dataUrl)
-    setCapturedBase64(dataUrl.split(",")[1])
+    // Keep a data URL only for the on-screen preview
+    const previewUrl = canvas.toDataURL("image/jpeg", 0.85)
+    setCapturedUrl(previewUrl)
+
+    // Convert to File (Blob + name) for multipart upload
+    canvas.toBlob(blob => {
+      if (blob) {
+        const timestamp = Date.now()
+        setCapturedFile(new File([blob], `assistance_${timestamp}.jpg`, { type: "image/jpeg" }))
+      }
+    }, "image/jpeg", 0.85)
+
     stopStream()
     setCameraState("CAPTURED")
   }, [cameraState, stopStream])
 
   const handleRetake = useCallback(() => {
     setCapturedUrl(null)
-    setCapturedBase64(null)
+    setCapturedFile(null)
     void startStream()
   }, [startStream])
 
   const handleConfirm = useCallback(async () => {
-    if (!capturedBase64) return
-    await onCapture(capturedBase64)
-  }, [capturedBase64, onCapture])
+    if (!capturedFile) return
+    await onCapture(capturedFile)
+  }, [capturedFile, onCapture])
 
   return (
     <Dialog open={open} onOpenChange={v => !v && !isConfirming && onCancel()}>
